@@ -82,3 +82,5 @@
 ---
 
 ## Member Signatures: 
+
+Andrew Nguyen
