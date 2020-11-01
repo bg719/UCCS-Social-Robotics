@@ -83,3 +83,4 @@
 ## Member Signatures: 
 
 11/01/2020 - Bryce George
+Andrew Nguyen- 11/1/20
