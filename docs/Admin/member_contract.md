@@ -14,6 +14,7 @@
 * Manage scheduling of member meetings
 
 ### `Standards and Test Manager` | Andrew Nguyen
+#### Responsibilities
 
 * Monitor repository submissions for standards compliance
 * Work with members to meet standards criteria
@@ -22,6 +23,7 @@
 
 
 ### `Logistics and Communications Co-Managers` | Colton Homuth & William Ross
+#### Responsibilities
 
 * Manage scheduling of meetings with exteneral parties
 * Manage communications between the team and external parties
