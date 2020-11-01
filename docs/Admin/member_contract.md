@@ -2,8 +2,7 @@
 
 ## Roles
 
-### Project Manager 
-#### `Bryce George`
+### `Project Manager` | Bryce George
 #### Responsibilities
 
 * Managing tasks
@@ -14,8 +13,7 @@
 * Learning and applying the available project management and organization tools and assisting other members with their correct usage
 * Manage scheduling of member meetings
 
-### Standards and Test Manager
-#### `Andrew Nguyen`
+### `Standards and Test Manager` | Andrew Nguyen
 
 * Monitor repository submissions for standards compliance
 * Work with members to meet standards criteria
@@ -23,8 +21,7 @@
 * Function as the lead reviewer for Pull Requests, particularly for merges into the `main` branch
 
 
-### Logistics and Communications Co-Managers 
-#### `Colton Homuth & William Ross`
+### `Logistics and Communications Co-Managers` | Colton Homuth & William Ross
 
 * Manage scheduling of meetings with exteneral parties
 * Manage communications between the team and external parties
@@ -82,3 +79,5 @@
 ---
 
 ## Member Signatures: 
+
+11/01/2020 - Bryce George
