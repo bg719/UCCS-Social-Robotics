@@ -82,3 +82,5 @@
 ---
 
 ## Member Signatures: 
+
+Andrew Nguyen- 11/1/20
