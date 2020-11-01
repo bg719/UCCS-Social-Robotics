@@ -83,6 +83,9 @@
 ## Member Signatures: 
 
 Bryce George - 11/01/2020
+
 Andrew Nguyen - 11/1/20
+
 William Ross - 11/01/2020
+
 Colton Homuth - 11/01/2020 
