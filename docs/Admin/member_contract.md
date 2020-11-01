@@ -82,3 +82,4 @@
 ---
 
 ## Member Signatures: 
+11/01/2020 - Colton Homuth
