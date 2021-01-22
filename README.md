@@ -2,7 +2,8 @@
  A repository for the Social Robotics research and development conducted for the UCCS Electrical & Computer Engineering Senior Design Seminar/Project 2020-2021. 
 
 # Project Overview
-*See our [Requirements Analysis Proposal](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more detailed information.*
+
+*See our [Requirements Analysis Report](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more detailed information.*
 
 ## Objective
 *Bryce George*
@@ -32,6 +33,12 @@ Given the team’s limited medical knowledge of ASD and the techniques for its d
 Within the scope of the current project are the following objectives:
 * Creation of a framework to aid the development and implementation of advanced social robotic behaviors to support diagnostic and therapeutic applications
 * Development of a proof-of-concept behavior component to implement the specified social interactive drawing scenario
+
+&nbsp;
+
+## Recommended Docs
+* [Requirements Analysis Report](docs/SubmissionPDFs/FinalSeminarReport.pdf)
+* [Requirements Analysis Presentation Slides](docs/SubmissionPDFs/FinalSeminarPresentation.pdf)
 
 # Getting Started
 Development has not yet begun, but come back soon for code and updates. In the meantime, please check out our [UCCS Social Robotics Wiki](https://github.com/ancient-sentinel/UCCS-Social-Robotics/wiki)!
