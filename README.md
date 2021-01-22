@@ -1,16 +1,15 @@
 # UCCS-Social-Robotics
  A repository for the Social Robotics research and development conducted for the UCCS Electrical & Computer Engineering Senior Design Seminar/Project 2020-2021. 
 
----
-
 # Project Overview
+*See our [Requirements Analysis Proposal](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more detailed information.*
 
 ## Objective
 *Bryce George*
 
 The development of a Social Interactivity Mentor for Youth with Autism using the NAO (SIMYAN) robot software platform. This platform will include an SDK supporting advanced social interactivity behaviors and a social interactive drawing module which implements the SDK for that specific scenario.
 
-The solution will expand upon the existing NAO robot framework to provide capabilities for performing playful learning activities with human subjects. The activities should provide opportunities for the subject to learn human social skills and expression through interaction with the robot. The primary targets of a developed solution would be children with ASD, with the ultimate goal being to provide tools for the future development of activities which help them to develop in their social interactive capacity. 
+The solution will expand upon the existing NAO robot framework to provide capabilities for performing playful learning activities with human subjects. The activities should provide opportunities for the subject to learn human social skills and expression through interaction with the robot. The primary targets of a developed solution would be children with ASD, with the ultimate goal being to provide tools for the future development of activities which help them to advance in their social interactive capacity. 
 
 &nbsp;
 
@@ -34,5 +33,5 @@ Within the scope of the current project are the following objectives:
 * Creation of a framework to aid the development and implementation of advanced social robotic behaviors to support diagnostic and therapeutic applications
 * Development of a proof-of-concept behavior component to implement the specified social interactive drawing scenario
 
-
-
+# Getting Started
+Development has not yet begun, but come back soon for code and updates. In the meantime, please check out our [UCCS Social Robotics Wiki](https://github.com/ancient-sentinel/UCCS-Social-Robotics/wiki)!
