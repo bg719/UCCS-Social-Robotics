@@ -40,5 +40,7 @@ Within the scope of the current project are the following objectives:
 * [Requirements Analysis Report](docs/SubmissionPDFs/FinalSeminarReport.pdf)
 * [Requirements Analysis Presentation Slides](docs/SubmissionPDFs/FinalSeminarPresentation.pdf)
 
+&nbsp;
+
 # Getting Started
 Development has not yet begun, but come back soon for code and updates. In the meantime, please check out our [UCCS Social Robotics Wiki](https://github.com/ancient-sentinel/UCCS-Social-Robotics/wiki)!
