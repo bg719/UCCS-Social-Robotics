@@ -4,6 +4,7 @@
 ---
 
 # Project Overview
+*See our [Requirements Analysis Proposal](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more detailed information.*
 
 ## Objective
 *Bryce George*
@@ -11,8 +12,6 @@
 The development of a Social Interactivity Mentor for Youth with Autism using the NAO (SIMYAN) robot software platform. This platform will include an SDK supporting advanced social interactivity behaviors and a social interactive drawing module which implements the SDK for that specific scenario.
 
 The solution will expand upon the existing NAO robot framework to provide capabilities for performing playful learning activities with human subjects. The activities should provide opportunities for the subject to learn human social skills and expression through interaction with the robot. The primary targets of a developed solution would be children with ASD, with the ultimate goal being to provide tools for the future development of activities which help them to advance in their social interactive capacity. 
-
-> See our [Requirements Analysis Proposal](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more information.
 
 &nbsp;
 
