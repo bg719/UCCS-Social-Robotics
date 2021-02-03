@@ -3,7 +3,7 @@
 
 # Project Overview
 
-*See our [Requirements Analysis Report](docs/SubmissionPDFs/FinalSeminarReport.pdf) for more detailed information.*
+*See our [Requirements Analysis Report](docs/SubmissionPDFs/RequirementsAnalysisReport.pdf) for more detailed information.*
 
 ## Objective
 *Bryce George*
@@ -37,8 +37,9 @@ Within the scope of the current project are the following objectives:
 &nbsp;
 
 ## Recommended Docs
-* [Requirements Analysis Report](docs/SubmissionPDFs/FinalSeminarReport.pdf)
-* [Requirements Analysis Presentation Slides](docs/SubmissionPDFs/FinalSeminarPresentation.pdf)
+* [Requirements Analysis Report](docs/SubmissionPDFs/RequirementsAnalysisReport.pdf)
+* [Requirements Analysis Presentation Slides](docs/SubmissionPDFs/RequirementsAnalysisPresentation.pdf)
+* [Proposal Presentation](docs/SubmissionPDFs/ProposalPresentation.pdf)
 
 &nbsp;
 
