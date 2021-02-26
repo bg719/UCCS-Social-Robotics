@@ -38,7 +38,7 @@ Within the scope of the current project are the following objectives:
 
 ## Recommended Docs
 * [Requirements Analysis Report](docs/SubmissionPDFs/RequirementsAnalysisReport.pdf)
-* [Requirements Analysis Presentation Slides](docs/SubmissionPDFs/RequirementsAnalysisPresentation.pdf)
+* [Requirements Analysis Presentation](docs/SubmissionPDFs/RequirementsAnalysisPresentation.pdf)
 * [Proposal Presentation](docs/SubmissionPDFs/ProposalPresentation.pdf)
 * [Design Review Presentation](docs/SubmissionPDFs/DesignReviewPresentation.pdf)
 
