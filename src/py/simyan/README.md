@@ -1,1 +1,0 @@
-# SIMYAN Core SDK
