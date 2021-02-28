@@ -1,15 +1,16 @@
-"""
-A sample showing how to make a Python script as an app.
-"""
-
 __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
+import qi
 import stk.runner
 import stk.events
 import stk.services
 import stk.logging
 
+# SIMYAN service modules
+from movement import SIMMotorControl
+from speech import SIMSpeech
+from vision import SIMVision
 
 # noinspection SpellCheckingInspection
 class SimyanActivitiesManager(object):
@@ -21,33 +22,38 @@ class SimyanActivitiesManager(object):
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
+        self.scoped_services = [
+            ServiceScope(qiapp, SIMMotorControl),
+            ServiceScope(qiapp, SIMSpeech),
+            ServiceScope(qiapp, SIMVision)
+        ]
+        self.say = self.s.ALTextToSpeech.say
 
-    def on_touched(self, *args):
-        """Callback for tablet touched."""
-        if args:
-            self.events.disconnect("ALTabletService.onTouchDown")
-            self.logger.info("Tablet touched: " + str(args))
-            self.s.ALTextToSpeech.say("Yay!")
-            self.stop()
+    def start_services(self):
+        """Register SIMYAN services."""
+        for service in self.scoped_services:
+            self.say("Registering" + str(service.name))
+            service.create_scope()
+
+    def stop_services(self):
+        """Unregister SIMYAN services"""
+        for service in self.scoped_services:
+            self.say("Stopping" + str(service.name))
+            if service.is_started:
+                service.close_scope()
 
     def on_start(self):
-        """Ask to be touched, waits, and exits."""
-        # Two ways of waiting for events
-        # 1) block until it's called
-        self.s.ALTextToSpeech.say("Touch my forehead.")
-        self.logger.warning("Listening for touch...")
-        while not self.events.wait_for("FrontTactilTouched"):
-            pass
+        self.start_services()
 
-        # 2) explicitly connect a callback
-        if self.s.ALTabletService:
-            self.events.connect("ALTabletService.onTouchDown", self.on_touched)
-            self.s.ALTextToSpeech.say("okay, now touch my tablet.")
-            # (this allows to simltaneously speak and watch an event)
-        else:
-            self.s.ALTextToSpeech.say("touch my tablet ... oh. " + \
-                                      "I don't haave one.")
-            self.stop()
+        if self.s.SIMMotorControl:
+            self.s.ALTextToSpeech.say("Motor control is registered.")
+        if self.s.SIMSpeech:
+            self.s.ALTextToSpeech.say("Speech is registered.")
+        if self.s.SIMVision:
+            self.s.ALTextToSpeech.say("Vision is registered.")
+
+        self.s.ALTextToSpeech.say("Stopping")
+        self.stop()
 
     def stop(self):
         """Standard way of stopping the application."""
@@ -55,9 +61,55 @@ class SimyanActivitiesManager(object):
         self.qiapp.stop()
 
     def on_stop(self):
-        """Cleanup"""
+        """Cleanup the activity"""
+        self.stop_services()
         self.logger.info("Application finished: Simyan Activities Manager.")
         self.events.clear()
+
+
+class ServiceScope:
+    """The scope for a service registered as part of an Application"""
+
+    def __init__(self, qiapp, service_class, service_name=None):
+        self.service_class = service_class
+        if not service_name:
+            service_name = service_class.__name__
+        self.name = service_name
+        self.instance = service_class(qiapp)
+        self.id = None
+        self.session = qiapp.session
+        self.is_started = False
+
+    def create_scope(self):
+        self.id = self.session.registerService(self.name, self.instance)
+
+        if hasattr(self.instance, "on_start"):
+            def handle_on_start_done(on_start_future):
+                try:
+                    msg = "Error in on_start(), stopping service: %s" \
+                          % on_start_future.error()
+                    if hasattr(self.instance, "logger"):
+                        self.instance.logger.error(msg)
+                    else:
+                        print msg
+                except:
+                    self.close_scope()
+            qi.async(self.instance.on_start).addCallback(self._handle_on_start_done)
+
+        self.is_started = self.id is not None
+
+    def close_scope(self):
+        # Cleanup
+        if hasattr(self.instance, "on_stop"):
+            # We need a qi.async call so that if the class is single threaded,
+            # it will wait for callbacks to be finished.
+            qi.async(self.instance.on_stop).wait()
+        if self.id:
+            self.session.unregisterService(self.id)
+            self.id = None
+            self.is_started = False
+
+
 
 
 if __name__ == "__main__":

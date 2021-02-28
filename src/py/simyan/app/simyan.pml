@@ -8,6 +8,9 @@
     <Resources>
         <File name="icon" src="icon.png" />
         <File name="main" src="scripts/main.py" />
+        <File name="SIMMotorControl" src="scripts/SIMMotorControl.py" />
+        <File name="SIMSpeech" src="scripts/SIMSpeech.py" />
+        <File name="SIMVision" src="scripts/SIMVision.py" />
         <File name="__init__" src="scripts/stk/__init__.py" />
         <File name="__init__" src="scripts/stk/__init__.pyc" />
         <File name="events" src="scripts/stk/events.py" />
