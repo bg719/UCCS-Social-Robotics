@@ -7,10 +7,17 @@
     <Dialogs />
     <Resources>
         <File name="icon" src="icon.png" />
+        <!-- SIMYAN Core SDK -->
         <File name="main" src="scripts/main.py" />
         <File name="SIMMotorControl" src="scripts/SIMMotorControl.py" />
         <File name="SIMSpeech" src="scripts/SIMSpeech.py" />
         <File name="SIMVision" src="scripts/SIMVision.py" />
+        <!-- SIMYAN Utilities Package -->
+        <File name="__init__" src="scripts/sim_utils/__init__.py" />
+        <File name="__init__" src="scripts/sim_utils/__init__.pyc" />
+        <File name="service" src="scripts/sim_utils/service.py" />
+        <File name="service" src="scripts/sim_utils/service.pyc" />
+        <!-- Studio Tool Kit Package -->
         <File name="__init__" src="scripts/stk/__init__.py" />
         <File name="__init__" src="scripts/stk/__init__.pyc" />
         <File name="events" src="scripts/stk/events.py" />
