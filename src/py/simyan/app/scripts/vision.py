@@ -45,7 +45,7 @@ class SIMVision(object):
     @qi.nobind
     def on_stop(self):
         """Cleanup (add yours if needed)"""
-        self.logger.info("ALSuperDuperService finished.")
+        self.logger.info("SIMVision finished.")
 
 
 ####################

@@ -30,13 +30,14 @@ class ActivityManager(object):
             ServiceScope(qiapp, SIMSpeech),
             ServiceScope(qiapp, SIMVision)
         ]
-        self.say_info = self.s.ALTextToSpeech.say  # Set this to None to stop speaking SIMYAN info
+        # Set this to None to stop speaking SIMYAN info
+        self.say_info = self.s.ALTextToSpeech.say
 
     def _start_services(self):
         """Register SIMYAN services."""
         for service in self.scoped_services:
             if self.say_info:
-                self.say_info("Registering" + str(service.name))
+                self.say_info("Registering " + str(service.name))
             service.create_scope()
             if not service.is_started and self.say_info:
                 self.say_info("Registration failed.")
@@ -45,26 +46,45 @@ class ActivityManager(object):
         """Unregister SIMYAN services."""
         for service in self.scoped_services:
             if self.say_info:
-                self.say_info("Stopping" + str(service.name))
+                self.say_info("Stopping " + str(service.name))
             if service.is_started:
                 service.close_scope()
 
+    def _active_services(self, log=False):
+        names = []
+        self.logger.info("Querying active Simyan services...")
+        for service in self.scoped_services:
+            if service.is_started:
+                names.append(service.name)
+                info = service.name + " is registered."
+                self.logger.info(info)
+                if self.say_info:
+                    self.say_info(info)
+        return names
+
     def on_start(self):
-        self.say_info("Starting SIMYAN. Registering services.")
+        self.say_info("Starting Simyan. Registering services.")
         self._start_services()
+        # self._active_services(log=True)
 
-        if self.s.SIMMotorControl and self.say_info:
-            self.say_info("Motor control is registered.")
-        if self.s.SIMSpeech and self.say_info:
-            self.say_info("Speech is registered.")
-        if self.s.SIMVision and self.say_info:
-            self.say_info("Vision is registered.")
+        speech = self.s.SIMSpeech
+        if speech.set:
+            self.logger.info("Setting speech level to 1.")
+            speech.set(1)
+        else:
+            self.logger.info("No 'set' method found.")
 
-        self.stop()
+        if speech.get:
+            self.logger.info("Getting speech level...")
+            level = speech.get()
+            self.logger.info("Got " + str(level))
 
-    def stop(self):
+        self.events.connect("FrontTactilTouched", self.stop)
+        #self.stop()
+
+    def stop(self, *args):
         """Standard way of stopping the application."""
-        self.logger.info("Stopping Simyan Activity.")
+        self.logger.info("Stopping Simyan activity.")
         self.qiapp.stop()
 
     def on_stop(self):
