@@ -16,9 +16,9 @@ from sim_utils.service import ServiceScope
 
 
 # noinspection SpellCheckingInspection
-class ActivityManager(object):
+class SIMActivityManager(object):
     """The activity responsible for management of SIMYAN services and activities."""
-    APP_ID = "org.uccs.simyan"
+    APP_ID = "org.uccs.simyan.SIMActivityManager"
 
     def __init__(self, qiapp):
         self.qiapp = qiapp
@@ -30,6 +30,7 @@ class ActivityManager(object):
             ServiceScope(qiapp, SIMSpeech),
             ServiceScope(qiapp, SIMVision)
         ]
+        self.activity = None
         # Set this to None to stop speaking SIMYAN info
         self.say_info = self.s.ALTextToSpeech.say
 
@@ -94,5 +95,21 @@ class ActivityManager(object):
         self.events.clear()
 
 
+class SIMActivityContext:
+    """The context for an executing SIMYAN activity."""
+    APP_ID = "org.uccs.simyan.SIMActivityContext"
+
+    def __init__(self, qiapp):
+        self.qiapp = qiapp
+        self.events = stk.events.EventHelper(qiapp.session)
+        self.s = stk.services.ServiceCache(qiapp.session)
+        self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
+        self.scoped_services = []
+
+
+class SIMActivityLoader:
+    pass
+
+
 if __name__ == "__main__":
-    stk.runner.run_activity(ActivityManager)
+    stk.runner.run_activity(SIMActivityManager)
