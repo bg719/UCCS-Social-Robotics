@@ -10,7 +10,7 @@ import stk.logging
 
 class SIMSpeech(object):
     """A SIMYAN NAOqi service providing supplemental speech services."""
-    APP_ID = "org.uccs.SIMSpeech"
+    APP_ID = "org.uccs.simyan.SIMSpeech"
 
     def __init__(self, qiapp):
         # generic activity boilerplate
@@ -23,17 +23,17 @@ class SIMSpeech(object):
 
     @qi.bind(returnType=qi.Void, paramsType=[qi.Int8])
     def set(self, level):
-        "Set level"
+        """Set level"""
         self.level = level
 
     @qi.bind(returnType=qi.Int8, paramsType=[])
     def get(self):
-        "Get level"
+        """Get level"""
         return self.level
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def reset(self):
-        "Reset level to default value"
+        """Reset level to default value"""
         return self.set(0)
 
     @qi.bind(returnType=qi.Void, paramsType=[])

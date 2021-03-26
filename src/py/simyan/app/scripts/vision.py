@@ -10,7 +10,7 @@ import stk.logging
 
 class SIMVision(object):
     """A SIMYAN NAOqi service providing supplemental vision services."""
-    APP_ID = "org.uccs.SIMVision"
+    APP_ID = "org.uccs.simyan.SIMVision"
 
     def __init__(self, qiapp):
         # generic activity boilerplate

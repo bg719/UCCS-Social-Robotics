@@ -10,7 +10,7 @@ import stk.logging
 
 class SIMMotorControl(object):
     """A SIMYAN NAOqi service providing supplemental motor control services."""
-    APP_ID = "org.uccs.SIMMotorControl"
+    APP_ID = "org.uccs.simyan.SIMMotorControl"
 
     def __init__(self, qiapp):
         # generic activity boilerplate
