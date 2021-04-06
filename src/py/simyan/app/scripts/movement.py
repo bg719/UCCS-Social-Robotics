@@ -8,6 +8,9 @@ import stk.services
 import stk.logging
 
 
+from sim_utils.motion import MotionSequenceContext
+
+
 class SIMMotorControl(object):
     """A SIMYAN NAOqi service providing supplemental motor control services."""
     APP_ID = "org.uccs.simyan.SIMMotorControl"
@@ -18,23 +21,34 @@ class SIMMotorControl(object):
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
-        # Internal variables
-        self.level = 0
 
-    @qi.bind(returnType=qi.Void, paramsType=[qi.Int8])
-    def set(self, level):
-        "Set level"
-        self.level = level
+        # service state
+        self.contexts = {}
 
-    @qi.bind(returnType=qi.Int8, paramsType=[])
-    def get(self):
-        "Get level"
-        return self.level
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.Object], methodName="registerContext")
+    def register_context(self, context):
+        if not self._can_register(context):
+            return False
+        self.contexts[context.name] = context
+        return True
 
-    @qi.bind(returnType=qi.Void, paramsType=[])
-    def reset(self):
-        "Reset level to default value"
-        return self.set(0)
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="hasContext")
+    def has_context(self, name):
+        return name in self.contexts
+
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="removeContext")
+    def remove_context(self, name):
+        context = self.contexts.pop(name, None)
+        return context is not None
+
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="supportsType")
+    def supports_type(self, type):
+        """
+        Determines whether the context type is supported.
+        :return: True if supported, otherwise False
+        """
+        # todo
+        pass
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
@@ -46,6 +60,14 @@ class SIMMotorControl(object):
     def on_stop(self):
         """Cleanup (add yours if needed)"""
         self.logger.info("SIMMotorControl finished.")
+
+    @qi.nobind
+    def _can_register(self, context):
+        """
+        Determines whether the context can be registered.
+        :return: True if the context can be created, otherwise False
+        """
+        return (not self.has_context(context.name)) and self.supports_type(context.type)
 
 
 ####################

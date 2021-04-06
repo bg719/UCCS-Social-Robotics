@@ -13,6 +13,7 @@ from vision import SIMVision
 
 # SIMYAN utilities
 from sim_utils.service import ServiceScope
+from sim_utils.motion import PlanarSequenceContext
 
 
 # noinspection SpellCheckingInspection
