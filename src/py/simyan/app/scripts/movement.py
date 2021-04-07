@@ -7,15 +7,20 @@ import stk.events
 import stk.services
 import stk.logging
 
+from simutils.motion import MotionSequenceContext
 
-from sim_utils.motion import MotionSequenceContext
 
-
+# noinspection PyPep8Naming
 class SIMMotorControl(object):
     """A SIMYAN NAOqi service providing supplemental motor control services."""
     APP_ID = "org.uccs.simyan.SIMMotorControl"
 
     def __init__(self, qiapp):
+        """
+        Initializes a new instance of the SIMMotorControl service.
+
+        :param qiapp: (qi.Application) The hosting qi application.
+        """
         # generic activity boilerplate
         self.qiapp = qiapp
         self.events = stk.events.EventHelper(qiapp.session)
@@ -24,31 +29,77 @@ class SIMMotorControl(object):
 
         # service state
         self.contexts = {}
+        self.handlers = {}
 
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.Object], methodName="registerContext")
-    def register_context(self, context):
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
+    def registerContext(self, context):
+        """
+        Registers the motion sequence context.
+
+        :param context: (simutils.motion.MotionSequenceContext)
+            The motion sequence context.
+        :return: True if the context was registered successfully;
+            otherwise, False.
+        """
         if not self._can_register(context):
             return False
-        self.contexts[context.name] = context
-        return True
+        return self._register_context(context)
 
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="hasContext")
-    def has_context(self, name):
-        return name in self.contexts
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
+    def hasContext(self, name):
+        """
+        Checks whether a context with the specified name is
+        registered.
 
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="removeContext")
-    def remove_context(self, name):
+        :param name: (str) The context name.
+        :return: True if the context is registered;
+            otherwise, False.
+        """
+        return self._get_context(name) is not None
+
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
+    def removeContext(self, name):
+        """
+        Removes the context with the specified name if it is
+        registered.
+
+        :param name: (str) The context name.
+        :return: True if the context was registered and has
+            been removed; otherwise, False.
+        """
         context = self.contexts.pop(name, None)
         return context is not None
 
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.String], methodName="supportsType")
-    def supports_type(self, type):
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
+    def supportsContextType(self, type):
         """
         Determines whether the context type is supported.
-        :return: True if supported, otherwise False
+
+        :param type: (str) The context type.
+        :return: True if the type is supported, otherwise False
         """
-        # todo
-        pass
+        return type in self.handlers
+
+    @qi.bind(returnType=qi.Object, paramsType=[qi.String, qi.Object])
+    def executeSequence(self, context_name, sequence):
+        """
+        Executes the motion sequence within the specified motion context.
+
+        :param context_name: (str) The context name.
+        :param sequence: (simutils.motion.MotionSequence)
+            The motion sequence.
+        :return: (ExecutionResult) The result of the sequence execution.
+        """
+        if not sequence:
+            return ExecutionResult.invalid_arg("sequence")
+
+        context = self._get_context(context_name)
+        if not context:
+            return ExecutionResult.no_such_context(context_name)
+
+        # todo: get the handler
+        # todo: pass the sequence to the handler
+        # todo: return the result
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
@@ -58,16 +109,64 @@ class SIMMotorControl(object):
 
     @qi.nobind
     def on_stop(self):
-        """Cleanup (add yours if needed)"""
+        """Cleanup resources."""
         self.logger.info("SIMMotorControl finished.")
 
     @qi.nobind
     def _can_register(self, context):
         """
         Determines whether the context can be registered.
-        :return: True if the context can be created, otherwise False
+
+        :return: True if the context can be created; otherwise, False.
         """
-        return (not self.has_context(context.name)) and self.supports_type(context.type)
+        return (not self.hasContext(context.name)) and \
+            self.supportsContextType(context.type)
+
+    @qi.nobind
+    def _get_context(self, name):
+        """
+        Attempts to get the context with the specified name.
+
+        :param name: the context name
+        :return: the context or None if no context was found
+        """
+        return self.contexts.get(name, None)
+
+    @qi.nobind
+    def _register_context(self, context):
+        """
+        Registers the motion sequence context.
+
+        :param context: (simutils.motion.MotionSequenceContext)
+            The motion sequence context.
+        :return: True if the context was registered successfully;
+            otherwise, False.
+        """
+        pass
+
+
+class ExecutionResult:
+
+    def __init__(self, success, status, message):
+        self.success = success
+        self.status = status
+        self.message = message
+
+    @staticmethod
+    def success_result(message=None, status=0):
+        return ExecutionResult(True, status, message)
+
+    @staticmethod
+    def error_result(message, status=-1):
+        return ExecutionResult(False, status, message)
+
+    @staticmethod
+    def invalid_arg(arg_name):
+        return ExecutionResult(False, -1, "Invalid argument: {0}".format(arg_name))
+
+    @staticmethod
+    def no_such_context(context_name):
+        return ExecutionResult(False, -1, "No registered context named: {0}".format(context_name))
 
 
 ####################

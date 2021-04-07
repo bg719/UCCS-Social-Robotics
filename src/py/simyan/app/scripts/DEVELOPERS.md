@@ -7,7 +7,7 @@ SDK, as well as provides guidance for adding further extensions to it.
 
 ## Core Components
 
-### Simyan - *main.py*
+### SIMActivityManager - *main.py*
 
 ### SIMMotorControl - *movement.py*
 
@@ -18,7 +18,15 @@ SDK, as well as provides guidance for adding further extensions to it.
 
 ## Utilities
 
-### ServiceScope - *sim_utils/service.py*
+### ServiceScope - *simutils/service.py*
+
+### MotionSequence - *simutils/motion.py*
+
+### MotionSequenceContext - *simutils/motion.py*
+
+### PlanarSequence - *simutils/motion.py*
+
+### PlanarSequenceContext - *simutils/motion.py*
 
 
 ## Conventions
@@ -27,4 +35,25 @@ SDK, as well as provides guidance for adding further extensions to it.
 The following conventions are used for naming code elements:
 
 * Service classes registered within the context of a SIMYAN session should begin
-  with "SIM". Example: `SIMMyServiceName`
+  with "SIM". 
+  * Example: `SIMMyServiceName`
+  
+* Service class method names use the following conventions:
+  
+  * Service methods exposed via the qi framework (using qi.bind) are camel-cased
+  to match the naoqi/qi framework convention.
+    * Examples:
+      * `myServiceMethod(...)`
+      * `method(...)`
+    
+  * Service methods registered as event/signal handlers are lower-cased and
+  separated by underscores to match the naoqi/qi framework convention.
+    * Examples:
+      * `on_start(...)`
+      * `on_my_event(...)`
+    
+  * Private service methods are lower-cased, begin with an underscore, and separated
+  by underscores.
+    * Examples:
+      * `_my_private_method(...)`
+      * `_reset(...)`
