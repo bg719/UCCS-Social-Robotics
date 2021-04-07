@@ -12,8 +12,8 @@ from speech import SIMSpeech
 from vision import SIMVision
 
 # SIMYAN utilities
-from sim_utils.service import ServiceScope
-from sim_utils.motion import PlanarSequenceContext
+from simutils.service import ServiceScope
+from simutils.motion import PlanarSequenceContext
 
 
 # noinspection SpellCheckingInspection
