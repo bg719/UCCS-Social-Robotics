@@ -7,8 +7,6 @@ import stk.events
 import stk.services
 import stk.logging
 
-from simutils.motion import MotionSequenceContext
-
 
 # noinspection PyPep8Naming
 class SIMMotorControl(object):
@@ -119,8 +117,8 @@ class SIMMotorControl(object):
 
         :return: True if the context can be created; otherwise, False.
         """
-        return (not self.hasContext(context.name)) and \
-            self.supportsContextType(context.type)
+        return (not self.hasContext(context.name())) and \
+            self.supportsContextType(context.type())
 
     @qi.nobind
     def _get_context(self, name):
@@ -145,28 +143,10 @@ class SIMMotorControl(object):
         pass
 
 
-class ExecutionResult:
+class PlanarSequenceHandler:
 
-    def __init__(self, success, status, message):
-        self.success = success
-        self.status = status
-        self.message = message
-
-    @staticmethod
-    def success_result(message=None, status=0):
-        return ExecutionResult(True, status, message)
-
-    @staticmethod
-    def error_result(message, status=-1):
-        return ExecutionResult(False, status, message)
-
-    @staticmethod
-    def invalid_arg(arg_name):
-        return ExecutionResult(False, -1, "Invalid argument: {0}".format(arg_name))
-
-    @staticmethod
-    def no_such_context(context_name):
-        return ExecutionResult(False, -1, "No registered context named: {0}".format(context_name))
+    def __init__(self):
+        pass
 
 
 ####################

@@ -13,7 +13,7 @@ from vision import SIMVision
 
 # SIMYAN utilities
 from simutils.service import ServiceScope
-from simutils.motion import PlanarSequenceContext
+from simutils.motion.contexts import PlanarSequenceContext
 
 
 # noinspection SpellCheckingInspection
@@ -80,6 +80,8 @@ class SIMActivityManager(object):
             self.logger.info("Getting speech level...")
             level = speech.get()
             self.logger.info("Got " + str(level))
+
+        context = PlanarSequenceContext.create_YZPlanarContext("draw", self.qiapp.session, 0.5)
 
         self.events.connect("FrontTactilTouched", self.stop)
         #self.stop()

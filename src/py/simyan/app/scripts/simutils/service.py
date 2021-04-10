@@ -54,3 +54,13 @@ class ServiceScope:
             self.id = None
             self.is_started = False
             self.instance = None
+
+
+class QiBox(qi.Object):
+    """A container for passing object parameters to service methods."""
+
+    def __init__(self, obj):
+        self._obj = obj
+
+    def unpack(self):
+        return self._obj
