@@ -1,5 +1,4 @@
 __version__ = "0.0.0"
-__author__ = 'ancient-sentinel'
 
 # SPACES
 SPACE_TORSO = 0

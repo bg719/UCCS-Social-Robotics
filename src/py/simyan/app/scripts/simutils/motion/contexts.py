@@ -89,7 +89,7 @@ class PlanarSequenceContext(MotionSequenceContext):
 
         :param session: (qi.Session) The qi session.
         :param name: (str) The name of the context.
-        :param plane: (simutils.motion.Plane) The plane.
+        :param plane: (simutils.motion.models.Plane) The plane.
         """
         self._session = session
         self._name = name
