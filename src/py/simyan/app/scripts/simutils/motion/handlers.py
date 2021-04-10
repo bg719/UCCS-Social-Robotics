@@ -7,12 +7,13 @@ from models import ExecutionResult
 
 
 class MotionSequenceHandler:
+    """The base class for motion sequence handlers."""
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def handle_seq(self, context, sequence):
         """
-        Handles the execution of the specified motion `sequence` withing the
+        Handles the execution of the specified motion `sequence` within the
         scope of the provided motion sequence `context`.
 
         NOTE: Since the context and motion sequence objects are passed
@@ -43,7 +44,33 @@ class MotionSequenceHandler:
         return False
 
 
-class PlanarSequenceHandler:
+class PlanarSequenceHandler(MotionSequenceHandler):
+    """A handler for planar motion sequences."""
 
     def __init__(self):
+        """Initializes a new planar motion sequence handler instance."""
         pass
+
+    def handle_seq(self, context, sequence):
+        """
+        Handles the execution of the specified planar motion `sequence` within
+        the scope of the provided motion sequence `context`.
+
+        :param context: (contexts.PlanarMotionSequenceContext)
+            The planar motion sequence context.
+        :param sequence: (models.MotionSequence)
+            The motion sequence.
+        :return: (models.ExecutionResult) The result of executing the sequence.
+        """
+        pass
+
+    def handles_type(self, type):
+        """
+        Determines whether this handler can handle the specified
+        motion sequence context type.
+
+        :param type: (str) The motion sequence context type.
+        :return: True if this handler can handle the context type;
+            otherwise, False.
+        """
+        return type == "planar"

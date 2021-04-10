@@ -30,7 +30,9 @@ class SIMMotorControl(object):
 
         # service state
         self.contexts = {}
-        self.handlers = [PlanarSequenceHandler()]
+        self.handlers = [
+            PlanarSequenceHandler()
+        ]
 
     @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
     def registerContext(self, context):
