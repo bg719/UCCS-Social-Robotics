@@ -6,24 +6,27 @@ import numpy as np
 import constants as const
 
 
-def to_point(p):
+def to_point(p, n=3):
     """
-    Attempts to convert the parameter `p` into a point in 3-space.
+    Attempts to convert the parameter `p` into a point in `n`-space.
     Parameters which result in a valid point definition include:
 
-    * Numeric iterables with 3 elements,
+    * Numeric iterables with `n` elements,
     * The value 0 (corresponding with the origin).
 
     :param p: (Union[Iterable[float], float]) The parameter to be
         converted into a point.
-    :return: The point as a 3-element numpy array, or None if the
+    :param n: (int) The dimension of the space.
+    :return: The point as an n-element numpy array, or None if the
         parameter could not be successfully converted to a point.
     """
-    if p == 0:
-        return np.zeros(3)
-    elif isinstance(p, np.ndarray) and len(p) == 3:
+    if n < 1:
+        return None
+    elif p == 0:
+        return np.zeros(n)
+    elif isinstance(p, np.ndarray) and len(p) == n:
         return p
-    elif len(p) == 3 and all(isinstance(x, float) for x in p):
+    elif len(p) == n and all(isinstance(x, float) for x in p):
         return np.ndarray(p)
     return None
 
@@ -49,17 +52,24 @@ class ExecutionResult:
         return ExecutionResult(False, codes.BAD_ARG, "Invalid argument: {0}".format(arg_name))
 
     @staticmethod
+    def invalid_kftype(kftype):
+        return ExecutionResult(False, codes.BAD_ARG, "Encountered invalid keyframe type: {0}".format(kftype))
+
+    @staticmethod
     def no_such_context(context_name):
         return ExecutionResult(False, codes.NO_CTX, "No registered context named: {0}".format(context_name))
 
 
 class KeyFrame:
 
-    def __init__(self, start, end, duration, effectors, kftype):
+    def __init__(self, start, end, duration,
+                 effectors, frame, axis_mask, kftype):
         self.start = start
         self.end = end
         self.duration = duration
         self.effectors = effectors
+        self.frame = frame
+        self.axis_mask = axis_mask
         self.kftype = kftype
 
     def complete(self):

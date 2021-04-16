@@ -8,7 +8,7 @@ import stk.services
 import stk.logging
 
 from simutils.motion.models import ExecutionResult
-from simutils.motion.handlers import PlanarSequenceHandler
+from simutils.motion.handlers import AbsoluteSequenceHandler, PlanarSequenceHandler
 
 
 # noinspection PyPep8Naming
@@ -31,6 +31,7 @@ class SIMMotorControl(object):
         # service state
         self.contexts = {}
         self.handlers = [
+            AbsoluteSequenceHandler(),
             PlanarSequenceHandler()
         ]
 

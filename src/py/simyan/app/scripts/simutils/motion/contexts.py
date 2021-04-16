@@ -9,7 +9,7 @@ from constants import FRAME_TORSO, FRAME_ROBOT, FRAME_WORLD
 from models import Plane, to_point
 
 
-class MotionSequenceContext(qi.Object):
+class MotionSequenceContext(object):
     """The context for a motion sequence."""
 
     __metaclass__ = abc.ABCMeta
@@ -26,6 +26,17 @@ class MotionSequenceContext(qi.Object):
         if not self.motion_service:
             return None
         return self.motion_service.executeSequence(self.get_name(), sequence)
+
+    @abc.abstractmethod
+    def get_bounds(self):
+        """
+        Gets the bounds on the region where the motion sequence
+        is to take place.
+
+        :return: The bounds or None if the sequence's region
+            is unbounded.
+        """
+        return None
 
     @abc.abstractmethod
     def get_frame(self):
@@ -82,20 +93,21 @@ class MotionSequenceContext(qi.Object):
 
 
 class PlanarSequenceContext(MotionSequenceContext):
-    """The context for a motion sequence in a get_plane in 3-space."""
+    """The context for a motion sequence in a plane in 3-space."""
 
     def __init__(self, session, name, plane):
         """
         Initializes a new planar sequence context instance.
 
         :param session: (qi.Session) The qi session.
-        :param name: (str) The get_name of the context.
-        :param plane: (models.Plane) The get_plane.
+        :param name: (str) The name of the context.
+        :param plane: (models.Plane) The plane.
         """
         self._session = session
         self._name = name
         self._service = None
         self._frame = FRAME_TORSO
+        self._bounds = None
 
         if not isinstance(plane, Plane):
             raise ValueError('Expected a Plane, but got a {0}.'.format(type(plane)))
@@ -107,6 +119,16 @@ class PlanarSequenceContext(MotionSequenceContext):
             raise ValueError('Invalid 3D normal.')
 
         self._plane = plane
+
+    def get_bounds(self):
+        """"
+        Gets the bounds on the region where the motion sequence
+        is to take place.
+
+        :return: The bounds or None if the sequence's region
+            is unbounded.
+        """
+        return self._bounds
 
     def get_frame(self):
         """
@@ -126,7 +148,7 @@ class PlanarSequenceContext(MotionSequenceContext):
         return self._service
 
     def get_name(self):
-        """Gets the get_name of the context."""
+        """Gets the name of the context."""
         return self._name
 
     def get_plane(self):
@@ -138,17 +160,47 @@ class PlanarSequenceContext(MotionSequenceContext):
         """Gets the qi session for this context."""
         return self._session
 
+    def set_bounds(self, bounds):
+        """
+        Sets the bounds for this context.
+
+        Formats:
+            Rectangular:
+                [[x, y], [x', y']] - Where (x, y) is the bottom left
+                corner of the rectangular region, and (x', y') is the
+                top right corner.
+
+                --or--
+
+                [x_min, x_max, y_min, y_max]
+        :param bounds: (Union[Iterable[float], Iterable[Iterable[float]]])
+            The bounds of the planar region.
+        :return: True if bounds were set successfully; otherwise, False.
+        """
+        if len(bounds) == 2:
+            p1 = to_point(bounds[0], 2)
+            p2 = to_point(bounds[1], 2)
+            if p1 and p2:
+                bounds = (p1[0], p1[1], p2[0], p2[1])
+        elif len(bounds) != 4:
+            return False
+
+        if bounds[0] < bounds[2] and bounds[1] < bounds[3]:
+            self._bounds = bounds
+            return True
+        return False
+
     def set_frame(self, frame):
         """
-        Sets the get_frame for this context.
+        Sets the frame for this context.
 
         * FRAME_TORSO = 0
         * FRAME_WORLD = 1
         * FRAME_ROBOT = 2
-        :param frame: The get_frame.
+        :param frame: The frame.
         """
         if frame not in [FRAME_TORSO, FRAME_ROBOT, FRAME_WORLD]:
-            raise ValueError("Invalid get_frame identifier.")
+            raise ValueError("Invalid frame identifier.")
         self._frame = frame
 
     def get_ctype(self):
@@ -158,15 +210,15 @@ class PlanarSequenceContext(MotionSequenceContext):
     @staticmethod
     def create_XYPlanarContext(name, session, z_pos=0):
         """
-        Creates a planar sequence context for a get_plane running parallel
-        to the xy-get_plane at the specified position, `z_pos`, along the z-axis.
-        The get_plane's normal vector points in the direction of the positive
+        Creates a planar sequence context for a plane running parallel
+        to the xy-plane at the specified position, `z_pos`, along the z-axis.
+        The plane's normal vector points in the direction of the positive
         z-axis.
 
-        :param name: (str) The get_name of the sequence context.
+        :param name: (str) The name of the sequence context.
         :param session: (qi.Session) The qi session.
-        :param z_pos: (float) The position of the get_plane along the z-axis.
-        :return: The sequence context for the specified get_plane.
+        :param z_pos: (float) The position of the plane along the z-axis.
+        :return: The sequence context for the specified plane.
         """
         plane = Plane([0, 0, z_pos], [0, 0, 1])
         context = PlanarSequenceContext(session, name, plane)
@@ -175,15 +227,15 @@ class PlanarSequenceContext(MotionSequenceContext):
     @staticmethod
     def create_YZPlanarContext(name, session, x_pos=0):
         """
-        Creates a planar sequence context for a get_plane running parallel
-        to the yz-get_plane at the specified position, `x_pos`, along the x-axis.
-        The get_plane's normal vector points in the direction of the positive
+        Creates a planar sequence context for a plane running parallel
+        to the yz-plane at the specified position, `x_pos`, along the x-axis.
+        The plane's normal vector points in the direction of the positive
         x-axis.
 
-        :param name: (str) The get_name of the sequence context.
+        :param name: (str) The name of the sequence context.
         :param session: (qi.Session) The qi session.
-        :param x_pos: (float) The position of the get_plane along the x-axis.
-        :return: The sequence context for the specified get_plane.
+        :param x_pos: (float) The position of the plane along the x-axis.
+        :return: The sequence context for the specified plane.
         """
         plane = Plane([x_pos, 0, 0], [1, 0, 0])
         context = PlanarSequenceContext(session, name, plane)
@@ -192,15 +244,15 @@ class PlanarSequenceContext(MotionSequenceContext):
     @staticmethod
     def create_XZPlanarContext(name, session, y_pos=0):
         """
-        Creates a planar sequence context for a get_plane running parallel
-        to the xz-get_plane at the specified position, `y_pos`, along the y-axis.
-        The get_plane's normal vector points in the direction of the positive
+        Creates a planar sequence context for a plane running parallel
+        to the xz-plane at the specified position, `y_pos`, along the y-axis.
+        The plane's normal vector points in the direction of the positive
         y-axis.
 
-        :param name: (str) The get_name of the sequence context.
+        :param name: (str) The name of the sequence context.
         :param session: (qi.Session) The qi session.
-        :param y_pos: (float) The position of the get_plane along the y-axis.
-        :return: The sequence context for the specified get_plane.
+        :param y_pos: (float) The position of the plane along the y-axis.
+        :return: The sequence context for the specified plane.
         """
         plane = Plane([0, y_pos, 0], [0, 1, 0])
         context = PlanarSequenceContext(session, name, plane)

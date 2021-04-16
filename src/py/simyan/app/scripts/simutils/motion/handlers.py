@@ -12,7 +12,7 @@ class MotionSequenceHandler:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def handle_seq(self, context, sequence):
+    def handle_seq(self, context, sequence, motion_proxy):
         """
         Handles the execution of the specified motion `sequence` within the
         scope of the provided motion sequence `context`.
@@ -45,6 +45,83 @@ class MotionSequenceHandler:
         return False
 
 
+TYPE = 0
+ARGS = 1
+FRAMES = 1
+PATHS = 2
+MASKS = 3
+TIMES = 4
+
+
+class AbsoluteSequenceHandler(MotionSequenceHandler):
+    """A handler for absolute motion sequences."""
+
+    def __init__(self):
+        """Initializes a new absolute motion sequence handler instance."""
+        pass
+
+    def handle_seq(self, context, sequence, motion_proxy):
+        keyframes = sequence.get_keyframes()
+
+        if not keyframes or \
+                keyframes[0].kftype not in \
+                {const.KFTYPE_ABSOLUTE_POSITION,
+                 const.KFTYPE_ABSOLUTE_TRANSFORM}:
+            return ExecutionResult.invalid_kftype(keyframes[0].kftype)
+
+        last_type = keyframes[0].kftype
+        invoke_list = [self._new_invocation(last_type, keyframes[0], motion_proxy)]
+        idx = 0
+        effectors = keyframes[0].effectors
+
+        for i in range(len(keyframes)):
+            current = keyframes[i]
+            if current.kftype == last_type and current.effectors == effectors:
+                if not current.start or idx == 0:
+                    self._append(invoke_list[idx], current)
+                    continue
+            idx += 1
+            invoke_list[idx] = self._new_invocation(current.kftype,
+                                                    current, motion_proxy)
+            self._append(invoke_list[idx], current)
+
+        for invocation in invoke_list:
+            if invocation[TYPE] == const.KFTYPE_ABSOLUTE_POSITION:
+                motion_proxy.positionInterpolations(*invocation[ARGS])
+            else:
+                motion_proxy.transformInterpolations(*invocation[ARGS])
+
+    def _get_position_time(self, position, motion_proxy):
+        return 3
+
+    def _get_transform_time(self, transform, motion_proxy):
+        return 3
+
+    def _new_invocation(self, kftype, firstkf, motion_proxy):
+        paths = []
+        frames = []
+        masks = []
+        times = []
+        if firstkf.start:
+            paths.append(firstkf.start)
+            frames.append(firstkf.frame)
+            masks.append(const.AXIS_MASK_VEL) # todo: confirm that this is correct
+            if kftype == const.KFTYPE_ABSOLUTE_POSITION:
+                move_time = self._get_position_time(firstkf.start, motion_proxy)
+                times.append(move_time)
+            else:
+                move_time = self._get_transform_time(firstkf.start, motion_proxy)
+                times.append(move_time)
+        return kftype, (firstkf.effectors, paths, frames, masks, times)
+
+    @staticmethod
+    def _append(invocation, keyframe):
+        invocation[ARGS][PATHS].append(keyframe.end)
+        invocation[ARGS][FRAMES].append(keyframe.frame)
+        invocation[ARGS][MASKS].append(keyframe.axis_mask)
+        invocation[ARGS][TIMES].append(keyframe.duration)
+
+
 class PlanarSequenceHandler(MotionSequenceHandler):
     """A handler for planar motion sequences."""
 
@@ -52,10 +129,10 @@ class PlanarSequenceHandler(MotionSequenceHandler):
         """Initializes a new planar motion sequence handler instance."""
         pass
 
-    def handle_seq(self, context, sequence):
+    def handle_seq(self, context, sequence, motion_proxy):
         """
-        Handles the execution of the specified planar motion `sequence` within
-        the scope of the provided motion sequence `context`.
+        Handles the execution of the specified planar motion sequence within
+        the scope of the provided motion sequence context.
 
         :param context: (contexts.PlanarMotionSequenceContext)
             The planar motion sequence context.

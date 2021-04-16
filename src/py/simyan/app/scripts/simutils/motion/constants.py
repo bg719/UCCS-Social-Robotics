@@ -35,7 +35,10 @@ it provides a natural, ego-centric reference.
 
 # MOVEMENT
 MVT_RELATIVE = 0
+"""Specifies that movement is relative to the current position."""
+
 MVT_ABSOLUTE = 1
+"""Specifies that movement is in reference to absolute position."""
 
 # ANGLE TYPE
 COMMANDS = 0,
@@ -43,18 +46,38 @@ SENSORS = 1
 
 # AXIS MASK
 AXIS_MASK_X = 1
+"""Mask x-axis."""
+
 AXIS_MASK_Y = 2
+"""Mask y-axis."""
+
 AXIS_MASK_Z = 4
+"""Mask z-axis."""
+
 AXIS_MASK_WX = 8
+"""Mask x-axis rotation."""
+
 AXIS_MASK_WY = 16
+"""Mask y-axis rotation."""
+
 AXIS_MASK_WZ = 32
+"""Mask z-axis rotation."""
+
 AXIS_MASK_ALL = 63
+"""Mask x, y, z, wx, wy, and wz axes."""
+
 AXIS_MASK_VEL = 7
+"""Mask x, y, and z axes."""
+
 AXIS_MASK_ROT = 56
+"""Mask wx, wy, and wz rotation axes."""
 
 # COMPUTING
 TO_RAD = 0.01745329
+"""The conversion factor for converting degrees to radians."""
+
 TO_DEG = 57.295779513082323
+"""The conversion factor for converting radians to degrees."""
 
 # EFFECTORS
 EF_HEAD = 'Head'
@@ -139,6 +162,7 @@ CTYPE_NONE = 'none'
 CTYPE_PLANAR = 'planar'
 
 # KEYFRAME TYPES
-KFTYPE_ANY = 'any'
 KFTYPE_NONE = 'none'
+KFTYPE_ABSOLUTE_POSITION = 'absolute.position'
+KFTYPE_ABSOLUTE_TRANSFORM = 'absolute.transform'
 KFTYPE_PLANAR = 'planar'
