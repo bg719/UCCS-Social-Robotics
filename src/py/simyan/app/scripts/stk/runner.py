@@ -146,7 +146,7 @@ def run_service(service_class, service_name=None):
     have on_start and on_stop methods, that will be called before and after
     running it.
 
-    If the service_name parameter is not given, the classes' name will be used.
+    If the service_name parameter is not given, the classes' get_name will be used.
     """
     if not service_name:
         service_name = service_class.__name__

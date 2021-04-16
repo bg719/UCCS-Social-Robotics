@@ -51,10 +51,10 @@ class SIMMotorControl(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def hasContext(self, name):
         """
-        Checks whether a context with the specified name is
+        Checks whether a context with the specified get_name is
         registered.
 
-        :param name: (str) The context name.
+        :param name: (str) The context get_name.
         :return: True if the context is registered;
             otherwise, False.
         """
@@ -63,10 +63,10 @@ class SIMMotorControl(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def removeContext(self, name):
         """
-        Removes the context with the specified name if it is
+        Removes the context with the specified get_name if it is
         registered.
 
-        :param name: (str) The context name.
+        :param name: (str) The context get_name.
         :return: True if the context was registered and has
             been removed; otherwise, False.
         """
@@ -76,10 +76,10 @@ class SIMMotorControl(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def supportsContextType(self, type):
         """
-        Determines whether the context type is supported.
+        Determines whether the context get_ctype is supported.
 
-        :param type: (str) The context type.
-        :return: True if the type is supported, otherwise False
+        :param type: (str) The context get_ctype.
+        :return: True if the get_ctype is supported, otherwise False
         """
         return any(handler.handles_type(type) for handler in self.handlers)
 
@@ -88,7 +88,7 @@ class SIMMotorControl(object):
         """
         Executes the motion sequence within the specified motion context.
 
-        :param context_name: (str) The context name.
+        :param context_name: (str) The context get_name.
         :param sequence: (simutils.motion.models.MotionSequence)
             The motion sequence.
         :return: (simutils.motion.models.ExecutionResult)
@@ -135,16 +135,16 @@ class SIMMotorControl(object):
 
         :return: True if the context can be created; otherwise, False.
         """
-        return (not self.hasContext(context.name())) and \
-            self.supportsContextType(context.type())
+        return (not self.hasContext(context.get_name())) and \
+               self.supportsContextType(context.get_ctype())
 
     @qi.nobind
     def _get_context_reg(self, name):
         """
         Attempts to get the registration for the context with the
-        specified name.
+        specified get_name.
 
-        :param name: (str) The context name.
+        :param name: (str) The context get_name.
         :return: The context registration or None if no context
             was found.
         """
@@ -161,8 +161,8 @@ class SIMMotorControl(object):
             otherwise, False.
         """
         for handler in self.handlers:
-            if handler.handles_type(context.type()):
-                self.contexts[context.name()] = (context, handler)
+            if handler.handles_type(context.get_ctype()):
+                self.contexts[context.get_name()] = (context, handler)
                 return True
         return False
 

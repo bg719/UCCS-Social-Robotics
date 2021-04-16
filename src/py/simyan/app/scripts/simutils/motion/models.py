@@ -3,6 +3,7 @@ __author__ = 'ancient-sentinel'
 
 import codes
 import numpy as np
+import constants as const
 
 
 def to_point(p):
@@ -16,7 +17,7 @@ def to_point(p):
     :param p: (Union[Iterable[float], float]) The parameter to be
         converted into a point.
     :return: The point as a 3-element numpy array, or None if the
-        parameter could not be successfully mapped to a point.
+        parameter could not be successfully converted to a point.
     """
     if p == 0:
         return np.zeros(3)
@@ -52,18 +53,32 @@ class ExecutionResult:
         return ExecutionResult(False, codes.NO_CTX, "No registered context named: {0}".format(context_name))
 
 
+class KeyFrame:
+
+    def __init__(self, start, end, duration, effectors, kftype):
+        self.start = start
+        self.end = end
+        self.duration = duration
+        self.effectors = effectors
+        self.kftype = kftype
+
+    def complete(self):
+        return self.end and self.duration \
+               and self.effectors and self.kftype
+
+
 class Plane:
     """
-    A plane in 3-space, defined by a `point` in the plane and a `vector`
-    which is normal to the plane.
+    A get_plane in 3-space, defined by a `point` in the get_plane and a `vector`
+    which is normal to the get_plane.
     """
 
     def __init__(self, point, normal):
         """
-        Initializes a new plane instance.
+        Initializes a new get_plane instance.
 
-        :param point: (Iterable[float]) A 3D point which resides in the plane.
-        :param normal: (Iterable[float]) A 3-space vector normal to the plane.
+        :param point: (Iterable[float]) A 3D point which resides in the get_plane.
+        :param normal: (Iterable[float]) A 3-space vector normal to the get_plane.
         """
         self.point = point
         self.normal = normal
@@ -71,13 +86,13 @@ class Plane:
     @staticmethod
     def from_points(points):
         """
-        Determines the plane which passes through the set of three
+        Determines the get_plane which passes through the set of three
         points provided.
 
-        :param points: (Iterable[float]) The 3 points to be used to define
-            the plane. All 3 points must be non-collinear in order to identify
-            a plane in 3-space.
-        :return: The plane containing the 3 specified points, or None
+        :param points: (Iterable[Iterable[float]]) The 3 points to be used to
+            define the get_plane. All 3 points must be non-collinear in order to
+            identify a get_plane in 3-space.
+        :return: The get_plane containing the 3 specified points, or None
             if two or more of the points were collinear.
         """
         if len(points) == 3:
@@ -87,12 +102,12 @@ class Plane:
     @staticmethod
     def create_from_points(p1, p2, p3):
         """
-        Determines the plane which passes through the three points.
+        Determines the get_plane which passes through the three points.
 
         :param p1: The first point.
         :param p2: The second point.
         :param p3: The third point.
-        :return: The plane containing the 3 specified points, or None
+        :return: The get_plane containing the 3 specified points, or None
             if two or more of the points were collinear.
         """
         p1 = to_point(p1)

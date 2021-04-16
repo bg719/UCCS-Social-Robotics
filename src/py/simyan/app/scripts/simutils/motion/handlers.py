@@ -2,6 +2,7 @@ __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
 import abc
+import constants as const
 
 from models import ExecutionResult
 
@@ -32,12 +33,12 @@ class MotionSequenceHandler:
         return ExecutionResult.error_result("Handling not implemented.")
 
     @abc.abstractmethod
-    def handles_type(self, type):
+    def handles_type(self, ctype):
         """
         Determines whether this handler can handle the specified
         motion sequence context type.
 
-        :param type: (str) The motion sequence context type.
+        :param ctype: (str) The motion sequence context type.
         :return: True if this handler can handle the context type;
             otherwise, False.
         """
@@ -58,19 +59,19 @@ class PlanarSequenceHandler(MotionSequenceHandler):
 
         :param context: (contexts.PlanarMotionSequenceContext)
             The planar motion sequence context.
-        :param sequence: (models.MotionSequence)
+        :param sequence: (sequences.PlanarSequence)
             The motion sequence.
         :return: (models.ExecutionResult) The result of executing the sequence.
         """
         pass
 
-    def handles_type(self, type):
+    def handles_type(self, ctype):
         """
         Determines whether this handler can handle the specified
         motion sequence context type.
 
-        :param type: (str) The motion sequence context type.
+        :param ctype: (str) The motion sequence context type.
         :return: True if this handler can handle the context type;
             otherwise, False.
         """
-        return type == "planar"
+        return ctype == const.CTYPE_PLANAR

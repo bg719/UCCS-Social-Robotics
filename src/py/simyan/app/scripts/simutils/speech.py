@@ -67,7 +67,7 @@ class QiChatBuilder:
         :returns: builder
         """
         concept_def = {
-            'name': concept
+            'get_name': concept
         }
         if not concept.startswith('('):
             concept='('+concept

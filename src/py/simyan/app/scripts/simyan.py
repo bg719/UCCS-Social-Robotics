@@ -14,6 +14,8 @@ from vision import SIMVision
 # SIMYAN utilities
 from simutils.service import ServiceScope
 from simutils.motion.contexts import PlanarSequenceContext
+from simutils.motion.models import KeyFrame
+from simutils.motion.sequences import PlanarSequence
 
 
 # noinspection SpellCheckingInspection
@@ -82,6 +84,9 @@ class SIMActivityManager(object):
             self.logger.info("Got " + str(level))
 
         context = PlanarSequenceContext.create_YZPlanarContext("draw", self.qiapp.session, 0.5)
+        context.register()
+        seq = PlanarSequence()
+        context.execute_seq(seq)
 
         self.events.connect("FrontTactilTouched", self.stop)
         #self.stop()
