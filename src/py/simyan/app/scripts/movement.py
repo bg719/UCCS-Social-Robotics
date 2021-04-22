@@ -111,7 +111,7 @@ class SIMMotorControl(object):
         result = None
         try:
             result = handler.execute_seq(context, sequence)
-        except RuntimeError as e:
+        except Exception as e:
             result = ExecutionResult.error_result(
                 "An unhandled error occurred while attempting to execute"
                 + "a motion sequence for context: {0}".format(context_name)

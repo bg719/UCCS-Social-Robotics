@@ -72,23 +72,30 @@ class KeyFrame:
         self.axis_mask = axis_mask
         self.kftype = kftype
 
-    def complete(self):
-        return self.end and self.duration \
-               and self.effectors and self.kftype
+    def is_complete(self):
+        if not self.end:
+            return False
+        elif not self.duration or self.duration < 0:
+            return False
+        elif not self.effectors:
+            return False
+        elif not self.kftype:
+            return False
+        return True
 
 
 class Plane:
     """
-    A get_plane in 3-space, defined by a `point` in the get_plane and a `vector`
-    which is normal to the get_plane.
+    A plane in 3-space, defined by a `point` in the plane and a `vector`
+    which is normal to the plane.
     """
 
     def __init__(self, point, normal):
         """
-        Initializes a new get_plane instance.
+        Initializes a new plane instance.
 
-        :param point: (Iterable[float]) A 3D point which resides in the get_plane.
-        :param normal: (Iterable[float]) A 3-space vector normal to the get_plane.
+        :param point: (Iterable[float]) A 3D point which resides in the plane.
+        :param normal: (Iterable[float]) A 3-space vector normal to the plane.
         """
         self.point = point
         self.normal = normal
@@ -96,13 +103,13 @@ class Plane:
     @staticmethod
     def from_points(points):
         """
-        Determines the get_plane which passes through the set of three
+        Determines the plane which passes through the set of three
         points provided.
 
         :param points: (Iterable[Iterable[float]]) The 3 points to be used to
-            define the get_plane. All 3 points must be non-collinear in order to
-            identify a get_plane in 3-space.
-        :return: The get_plane containing the 3 specified points, or None
+            define the plane. All 3 points must be non-collinear in order to
+            identify a plane in 3-space.
+        :return: The plane containing the 3 specified points, or None
             if two or more of the points were collinear.
         """
         if len(points) == 3:
@@ -112,12 +119,12 @@ class Plane:
     @staticmethod
     def create_from_points(p1, p2, p3):
         """
-        Determines the get_plane which passes through the three points.
+        Determines the plane which passes through the three points.
 
         :param p1: The first point.
         :param p2: The second point.
         :param p3: The third point.
-        :return: The get_plane containing the 3 specified points, or None
+        :return: The plane containing the 3 specified points, or None
             if two or more of the points were collinear.
         """
         p1 = to_point(p1)

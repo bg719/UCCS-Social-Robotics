@@ -12,10 +12,10 @@ from speech import SIMSpeech
 from vision import SIMVision
 
 # SIMYAN utilities
+import simutils.motion.constants as const
 from simutils.service import ServiceScope
-from simutils.motion.contexts import PlanarSequenceContext
-from simutils.motion.models import KeyFrame
-from simutils.motion.sequences import PlanarSequence
+from simutils.motion.contexts import AbsoluteSequenceContext, PlanarSequenceContext
+from simutils.motion.sequences import AbsoluteSequence, PlanarSequence
 
 
 # noinspection SpellCheckingInspection
@@ -83,10 +83,15 @@ class SIMActivityManager(object):
             level = speech.get()
             self.logger.info("Got " + str(level))
 
-        context = PlanarSequenceContext.create_YZPlanarContext("draw", self.qiapp.session, 0.5)
+        # context = PlanarSequenceContext.create_YZPlanarContext("draw", self.qiapp.session, 0.5)
+        # context.register()
+        # seq = PlanarSequence()
+        # context.execute_seq(seq)
+
+        context = AbsoluteSequenceContext(self.qiapp.session, "aboluteDrawing")
         context.register()
-        seq = PlanarSequence()
-        context.execute_seq(seq)
+        seq = AbsoluteSequence(const.EF_LEFT_ARM, const.FRAME_ROBOT, const.AXIS_MASK_VEL)
+        seq.next_position_keyframe()
 
         self.events.connect("FrontTactilTouched", self.stop)
         #self.stop()

@@ -1,9 +1,14 @@
 """
 See documentation for additional constants and information:
 
-- Frames: https://developer.softbankrobotics.com/nao-naoqi-2-1/naoqi-developer-guide/naoqi-framework/naoqi-apis/naoqi-motion/almotion/cartesian
-- Effectors: https://developer.softbankrobotics.com/nao-naoqi-2-1/nao-documentation/nao-technical-guide/nao-technical-overview/effector-chain#nao-effector
-- Dimensions: https://developer.softbankrobotics.com/nao-naoqi-2-1/nao-documentation/nao-technical-guide/nao-h25/h25-links
+Frames:
+    - https://developer.softbankrobotics.com/nao-naoqi-2-1/naoqi-developer-guide/naoqi-framework/naoqi-apis/naoqi-motion/almotion/cartesian
+Effectors:
+    - https://developer.softbankrobotics.com/nao-naoqi-2-1/nao-documentation/nao-technical-guide/nao-technical-overview/effector-chain#nao-effector
+Dimensions:
+    - https://developer.softbankrobotics.com/nao-naoqi-2-1/nao-documentation/nao-technical-guide/nao-h25/h25-links
+Predefined Postures:
+    - https://developer.softbankrobotics.com/nao-naoqi-2-1/nao-documentation/nao-technical-guide/nao-technical-overview/predefined-postures
 """
 
 __version__ = "0.0.0"
@@ -32,6 +37,8 @@ This get_frame is average of the two feet positions projected around a vertical
 z-axis. This space is useful because the x-axis is always forwards so
 it provides a natural, ego-centric reference.
 """
+
+FRAMES = (FRAME_TORSO, FRAME_WORLD, FRAME_ROBOT)
 
 # MOVEMENT
 MVT_RELATIVE = 0
@@ -146,6 +153,31 @@ End Transform:
     [0.0, 0.0, 0.0]
 """
 
+EFFECTORS = (
+    EF_HEAD, EF_TORSO,
+    EF_LEFT_ARM, EF_LEFT_LEG,
+    EF_RIGHT_ARM, EF_RIGHT_LEG
+)
+"""The list of all of the robot's effectors."""
+
+# PREDEFINED POSTURES
+POSE_STAND = 'Stand'
+POSE_STAND_INIT = 'StandInit'
+POSE_STAND_ZERO = 'StandZero'
+POSE_CROUCH = 'Crouch'
+POSE_SIT = 'Sit'
+POSE_SIT_RELAX = 'SitRelax'
+POSE_LYING_BELLY = 'LyingBelly'
+POSE_LYING_BACK = 'LyingBack'
+
+PREDEFINED_POSES = [
+    POSE_STAND, POSE_STAND_INIT, POSE_STAND_ZERO,
+    POSE_CROUCH, POSE_SIT, POSE_SIT_RELAX,
+    POSE_LYING_BACK, POSE_LYING_BELLY
+]
+"""The list of all predefined poses/postures."""
+
+
 # DIMENSIONS
 FOOT_HEIGHT = 0.04519
 """Foot height (m)."""
@@ -157,12 +189,21 @@ HAND_OFFSET_Z = 0.01231
 """Hand offset in the z-axis (m)."""
 
 # CONTEXT TYPES
+CTYPE_ABSOLUTE = 'absolute'
 CTYPE_ANY = 'any'
 CTYPE_NONE = 'none'
 CTYPE_PLANAR = 'planar'
+CTYPES = [
+    CTYPE_ABSOLUTE, CTYPE_ANY,
+    CTYPE_NONE, CTYPE_PLANAR
+]
 
 # KEYFRAME TYPES
 KFTYPE_NONE = 'none'
 KFTYPE_ABSOLUTE_POSITION = 'absolute.position'
 KFTYPE_ABSOLUTE_TRANSFORM = 'absolute.transform'
 KFTYPE_PLANAR = 'planar'
+KFTYPES = [
+    KFTYPE_NONE, KFTYPE_ABSOLUTE_POSITION,
+    KFTYPE_ABSOLUTE_TRANSFORM, KFTYPE_PLANAR
+]
