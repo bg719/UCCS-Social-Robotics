@@ -12,10 +12,7 @@ from speech import SIMSpeech
 from vision import SIMVision
 
 # SIMYAN utilities
-import simutils.motion.constants as const
 from simutils.service import ServiceScope
-from simutils.motion.contexts import AbsoluteSequenceContext, PlanarSequenceContext
-from simutils.motion.sequences import AbsoluteSequence, PlanarSequence
 
 
 # noinspection SpellCheckingInspection
@@ -30,8 +27,8 @@ class SIMActivityManager(object):
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
         self.scoped_services = [
             ServiceScope(qiapp, SIMMotorControl),
-            ServiceScope(qiapp, SIMSpeech),
-            ServiceScope(qiapp, SIMVision)
+            # ServiceScope(qiapp, SIMSpeech),
+            # ServiceScope(qiapp, SIMVision)
         ]
         self.activity = None
         # Set this to None to stop speaking SIMYAN info
@@ -71,30 +68,8 @@ class SIMActivityManager(object):
         self._start_services()
         # self._active_services(log=True)
 
-        speech = self.s.SIMSpeech
-        if speech.set:
-            self.logger.info("Setting speech level to 1.")
-            speech.set(1)
-        else:
-            self.logger.info("No 'set' method found.")
-
-        if speech.get:
-            self.logger.info("Getting speech level...")
-            level = speech.get()
-            self.logger.info("Got " + str(level))
-
-        # context = PlanarSequenceContext.create_YZPlanarContext("draw", self.qiapp.session, 0.5)
-        # context.register()
-        # seq = PlanarSequence()
-        # context.execute_seq(seq)
-
-        context = AbsoluteSequenceContext(self.qiapp.session, "aboluteDrawing")
-        context.register()
-        seq = AbsoluteSequence(const.EF_LEFT_ARM, const.FRAME_ROBOT, const.AXIS_MASK_VEL)
-        seq.next_position_keyframe()
-
         self.events.connect("FrontTactilTouched", self.stop)
-        #self.stop()
+        # self.stop()
 
     def stop(self, *args):
         """Standard way of stopping the application."""
@@ -118,10 +93,6 @@ class SIMActivityContext:
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
         self.scoped_services = []
-
-
-class SIMActivityLoader:
-    pass
 
 
 if __name__ == "__main__":

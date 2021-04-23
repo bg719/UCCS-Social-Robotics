@@ -7,8 +7,7 @@ import stk.events
 import stk.services
 import stk.logging
 
-from simutils.motion.models import ExecutionResult
-from simutils.motion.handlers import AbsoluteSequenceHandler, PlanarSequenceHandler
+from simutils.motion.absolute import *
 
 
 # noinspection PyPep8Naming
@@ -32,7 +31,7 @@ class SIMMotorControl(object):
         self.contexts = {}
         self.handlers = [
             AbsoluteSequenceHandler(),
-            PlanarSequenceHandler()
+            # PlanarSequenceHandler()
         ]
 
     @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
@@ -110,7 +109,7 @@ class SIMMotorControl(object):
         # execute the sequence using the handler and context
         result = None
         try:
-            result = handler.execute_seq(context, sequence)
+            result = handler.execute_sequence(context, sequence)
         except Exception as e:
             result = ExecutionResult.error_result(
                 "An unhandled error occurred while attempting to execute"
