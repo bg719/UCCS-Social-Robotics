@@ -34,6 +34,11 @@ class SIMMotorControl(object):
             # PlanarSequenceHandler()
         ]
 
+    @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
+    def repeat(self, string):
+	self.s.ALTextToSpeech.say(string)
+	return True	
+
     @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
     def registerContext(self, context):
         """
@@ -44,6 +49,7 @@ class SIMMotorControl(object):
         :return: True if the context was registered successfully;
             otherwise, False.
         """
+	# self.s.ALTextToSpeech.say("We got to registration!")
         if not self._can_register(context):
             return False
         return self._register_context(context)
@@ -109,8 +115,11 @@ class SIMMotorControl(object):
         # execute the sequence using the handler and context
         result = None
         try:
-            result = handler.execute_sequence(context, sequence)
+	    self.logger.info('Executing motion sequence for context: {0}'.format(context_name))
+            result = handler.handle_seq(context, sequence, self.s.ALMotion, self.s.ALRobotPosture)
+	    self.logger.info('Execution result: {0} - {1}'.format(result.success, result.message))
         except Exception as e:
+	    self.logger.info('Exception while executing sequence for context {0}. Message: {1}'.format(context_name, e.message))
             result = ExecutionResult.error_result(
                 "An unhandled error occurred while attempting to execute"
                 + "a motion sequence for context: {0}".format(context_name)
@@ -162,7 +171,9 @@ class SIMMotorControl(object):
         """
         for handler in self.handlers:
             if handler.handles_type(context.get_ctype()):
-                self.contexts[context.get_name()] = (context, handler)
+		name = context.get_name()
+		self.logger.info('Registering motion context: {0}'.format(name))
+                self.contexts[name] = (context, handler)
                 return True
         return False
 

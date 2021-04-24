@@ -25,11 +25,11 @@ def new_invocation_args():
     """
     Returns a new, emtpy invocation argument list.
     
-    :return: a 5-tuple of lists, corresponding with
-        ([effectors_vector], [paths_vector], [frames_vector],
-         [masks_vector], [times_vector])
+    :return: a 4-tuple of lists, corresponding with
+        ([effectors_vector], [frames_vector],
+         [paths_vector], [times_vector])
     """
-    return [], [], [], [], []
+    return [], [], [], []
 
 
 class KeyframeTypeError(ValueError):

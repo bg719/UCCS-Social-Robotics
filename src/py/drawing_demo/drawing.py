@@ -8,7 +8,7 @@ import stk.runner
 import stk.events
 import stk.services
 import stk.logging
-from simyan.app.scripts.simutils.motion.absolute import *
+from simutils.motion.absolute import *
 
 
 def set_breathing(enabled, motion_proxy):
@@ -71,7 +71,7 @@ class SIMDrawingDemo(object):
 
             triangle = shapes['triangle']
             seq = AbsoluteSequence(
-                triangle['effectors'],
+                triangle['leftHand']['effectors'],
                 triangle['frame'],
                 triangle['axisMask']
             )

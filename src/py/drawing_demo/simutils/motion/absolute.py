@@ -190,15 +190,11 @@ class AbsoluteSequence(MotionSequence):
         if not keyframe.is_complete():
             return False
         elif keyframe.kftype == const.KFTYPE_ABSOLUTE_POSITION:
-	    ok_start = True
-	    if keyframe.start is not None:
-		ok_start = len(keyframe.start) == 6
-            return ok_start and len(keyframe.end) == 6
+            return (keyframe.start or len(keyframe.start) == 6) \
+                and len(keyframe.end) == 6
         elif keyframe.kftype == const.KFTYPE_ABSOLUTE_TRANSFORM:
-            ok_start = True
-	    if keyframe.start is not None:
-		ok_start = len(keyframe.start) == 12
-            return ok_start and len(keyframe.end) == 12
+            return (keyframe.start or len(keyframe.start) == 12) \
+                and len(keyframe.end) == 12
         else:
             return False
 
@@ -206,7 +202,7 @@ class AbsoluteSequence(MotionSequence):
 class AbsoluteSequenceContext(MotionSequenceContext):
 
     def __init__(self, session, name, initial_pose=const.POSE_STAND_INIT,
-                 motion_proxy=None, thresholds=0.001, extensive_validation=True):
+                 thresholds=0.001, extensive_validation=True):
         """
         Initializes a new absolute sequence context instance.
 
@@ -247,8 +243,8 @@ class AbsoluteSequenceContext(MotionSequenceContext):
             extensive validation before sending sequences
             to the motion service.
         """
-        # if not session:
-        #     raise TypeError('The session cannot be None.')
+        if not session:
+            raise TypeError('The session cannot be None.')
 
         if not isinstance(name, str):
             raise TypeError('Invalid type for name.')
@@ -280,9 +276,9 @@ class AbsoluteSequenceContext(MotionSequenceContext):
         else:
             raise TypeError('Invalid thresholds specifier.')
 
-        # self._session = session
+        self._session = session
         self._name = name
-        # self._service = motion_proxy
+        self._service = None
         self._extensive_validation = extensive_validation
 
     def check_sequence(self, sequence, extensive=False):
@@ -304,17 +300,17 @@ class AbsoluteSequenceContext(MotionSequenceContext):
                        for kf in sequence.get_keyframes())
         return True
 
-    # @property
-    # def motion_service(self):
-    #     """Gets the motion service."""
-    #     if self._service is None:
-    #         self._service = self.session.service("SIMMotorControl")
-    #     return self._service
+    @property
+    def motion_service(self):
+        """Gets the motion service."""
+        if self._service is None:
+            self._service = self.session.service("SIMMotorControl")
+        return self._service
 
-    # @property
-    # def session(self):
-    #     """Gets the qi session for this context."""
-    #     return self._session
+    @property
+    def session(self):
+        """Gets the qi session for this context."""
+        return self._session
 
     def extensive_validation(self):
         """Indicates whether extensive validation will be performed
@@ -348,17 +344,13 @@ class AbsoluteSequenceContext(MotionSequenceContext):
             if the initial position was set successfully, False if
             setting the initial position failed.
         """
-	print('we got here')
         if callable(self._initial_pose):
             try:
-		print('calling initial pose')
                 self._initial_pose()
-		print('called initial pose')
                 return True
             except:
                 return False
         else:
-	    print('returning initial pose')
             return self._initial_pose
 
     def get_thresholds(self):
@@ -389,20 +381,15 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             effectors = set(last.effectors)
             thresholds = context.get_thresholds() or 0.001
 
-	    print('checkpoint 1')
-
             for current in keyframes:
                 curr_effectors = set(current.effectors)
                 if current.kftype == last.kftype and curr_effectors == effectors:
-		    print('adding to invocation')
                     if not current.start or idx == 0:
                         self._append(invoke_list[idx], current)
-			print('appended')
                     elif self._are_same(current.start, last.end, thresholds):
                         self._append(invoke_list[idx], current)
                     last = current
                     continue
-		print('new invocation')
                 idx += 1
                 invoke_list[idx] = self._new_invocation(current, motion_proxy)
                 self._append(invoke_list[idx], current)
@@ -413,10 +400,8 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             return ExecutionResult.error_result(
                 'Exception while attempting to generate sequence invocations. ' +
                 'Message: {0}'.format(e.message))
-	
-	print('setting initial posture')
+
         set_pose = context.get_or_set_initial_pose()
-	print('initial posture set')
 
         if isinstance(set_pose, str):
             posture_proxy.goToPosture(set_pose, 0.5)
@@ -424,12 +409,10 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             return ExecutionResult.error_result(
                 'Context reported failure to set initial position. ' +
                 'Aborting execution of motion sequence.')
-	
+
         for invocation in invoke_list:
             if invocation[TYPE] == const.KFTYPE_ABSOLUTE_POSITION:
-		e, f, p, m, t = invocation[ARGS]
-		for i in range(len(e)):
-                    motion_proxy.positionInterpolations(e[i], f[i], p[i], m[i], t[i])
+                motion_proxy.positionInterpolations(*invocation[ARGS])
             else:
                 motion_proxy.transformInterpolations(*invocation[ARGS])
 
@@ -446,8 +429,8 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
 
     def _new_invocation(self, firstkf, motion_proxy):
         args = new_invocation_args()
+        args[EFFECTORS].extend(firstkf.effectors)
         if firstkf.start:
-            args[EFFECTORS].append(firstkf.effectors[0])
             args[PATHS].append(firstkf.start)
             args[FRAMES].append(firstkf.frame)
             args[MASKS].append(const.AXIS_MASK_VEL)
@@ -463,8 +446,6 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
 
     @staticmethod
     def _append(invocation, keyframe):
-	print(invocation)
-	invocation[ARGS][EFFECTORS].append(keyframe.effectors[0])
         invocation[ARGS][PATHS].append(keyframe.end)
         invocation[ARGS][FRAMES].append(keyframe.frame)
         invocation[ARGS][MASKS].append(keyframe.axis_mask)

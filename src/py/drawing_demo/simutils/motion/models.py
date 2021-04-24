@@ -48,7 +48,7 @@ class KeyFrame:
         self.kftype = kftype
 
     def is_complete(self):
-        if self.end is None:
+        if not self.end:
             return False
         elif not self.duration or self.duration < 0:
             return False

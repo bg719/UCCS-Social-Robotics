@@ -18,12 +18,12 @@ def to_point(p, n=3):
     :return: The point as an n-element numpy array, or None if the
         parameter could not be successfully converted to a point.
     """
-    if p is None or n < 1:
+    if n < 1:
         return None
     elif p == 0:
         return np.zeros(n)
     elif isinstance(p, np.ndarray) and len(p) == n:
         return p
-    elif len(p) == n and all(isinstance(x, (float, int)) for x in p):
-        return p # np.array(p, dtype=np.float)
+    elif len(p) == n and all(isinstance(x, float) for x in p):
+        return np.ndarray(p)
     return None

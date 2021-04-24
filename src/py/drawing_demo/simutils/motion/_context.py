@@ -16,6 +16,16 @@ class MotionSequenceContext(object):
          before sequences are sent to the motion service."""
         return False
 
+    @abc.abstractproperty
+    def motion_service(self):
+        """Gets the motion service."""
+        return None
+
+    @abc.abstractproperty
+    def session(self):
+        """Gets the qi session for this context."""
+        return None
+
     @abc.abstractmethod
     def check_sequence(self, sequence, extensive=False):
         """
@@ -31,7 +41,7 @@ class MotionSequenceContext(object):
         """
         return False
 
-    def execute_sequence(self, sequence, motion_service):
+    def execute_sequence(self, sequence):
         """
         Sends the motion sequence to the motion service to be
         executed and returns the result.
@@ -40,11 +50,11 @@ class MotionSequenceContext(object):
         :return: The execution result or None if the motion
             service is not available.
         """
-        if not motion_service:
+        if not self.motion_service:
             return None
         elif not self.check_sequence(sequence, self.extensive_validation):
             raise ValueError('Motion sequence failed validation.')
-        return motion_service.executeSequence(self.get_name(), sequence)
+        return self.motion_service.executeSequence(self.get_name(), sequence)
 
     @abc.abstractmethod
     def get_bounds(self):
@@ -79,21 +89,16 @@ class MotionSequenceContext(object):
         """
         return False
 
-    def register(self, motion_service):
+    def register(self):
         """
         Registers this context with the motion service.
 
         :return: True if the registration was successful;
             otherwise, False.
         """
-	try:
-	    if motion_service is None:
-	        return False
-	    # if motion_service.repeat("About to register context:"):
-	    return motion_service.registerContext(self)
-        except Exception as e:
-	    print(e.message, e.args)
-	    return False
+        if self.motion_service is None:
+            return False
+        return self.motion_service.registerContext(self)
 
     def unregister(self):
         """

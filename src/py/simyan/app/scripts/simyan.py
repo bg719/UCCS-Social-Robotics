@@ -11,8 +11,11 @@ from movement import SIMMotorControl
 from speech import SIMSpeech
 from vision import SIMVision
 
+from drawing import SIMDrawingDemo
+
 # SIMYAN utilities
 from simutils.service import ServiceScope
+from simutils.motion.absolute import *
 
 
 # noinspection SpellCheckingInspection
@@ -64,9 +67,26 @@ class SIMActivityManager(object):
         return names
 
     def on_start(self):
-        self.say_info("Starting Simyan. Registering services.")
+        # self.say_info("Starting Simyan. Registering services.")
         self._start_services()
         # self._active_services(log=True)
+
+	if not self.s.SIMMotorControl.repeat("Called motor control"):
+	    # class MyObj:
+		# name = "My object"
+	    
+	    # obj = MyObj()
+	    context = AbsoluteSequenceContext(
+		self.qiapp.session, self.APP_ID, 
+		motion_proxy=self.s.SIMMotorControl, extensive_validation=False)
+	    self.s.SIMMotorControl.registerContext(context)
+	else:
+	    draw = ServiceScope(self.qiapp, SIMDrawingDemo)
+	    try:
+	        draw.create_scope()
+	    except Exception as e:
+	        self.logger.info(e.message)
+	        draw.close_scope()
 
         self.events.connect("FrontTactilTouched", self.stop)
         # self.stop()
@@ -96,4 +116,4 @@ class SIMActivityContext:
 
 
 if __name__ == "__main__":
-    stk.runner.run_activity(SIMActivityManager)
+    stk.runner.run_service(SIMActivityManager)
