@@ -170,11 +170,11 @@ POSE_SIT_RELAX = 'SitRelax'
 POSE_LYING_BELLY = 'LyingBelly'
 POSE_LYING_BACK = 'LyingBack'
 
-PREDEFINED_POSES = [
+PREDEFINED_POSES = (
     POSE_STAND, POSE_STAND_INIT, POSE_STAND_ZERO,
     POSE_CROUCH, POSE_SIT, POSE_SIT_RELAX,
     POSE_LYING_BACK, POSE_LYING_BELLY
-]
+)
 """The list of all predefined poses/postures."""
 
 

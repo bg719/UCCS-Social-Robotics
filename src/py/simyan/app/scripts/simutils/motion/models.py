@@ -2,6 +2,7 @@ __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
 import codes
+import constants as const
 import numpy as np
 from utils import to_point
 
@@ -24,35 +25,43 @@ class ExecutionResult:
 
     @staticmethod
     def invalid_arg(arg_name):
-        return ExecutionResult(False, codes.BAD_ARG, "Invalid argument: {0}".format(arg_name))
+        return ExecutionResult(False, codes.BAD_ARG,
+                               "Invalid argument: {0}".format(arg_name))
 
     @staticmethod
     def invalid_kftype(kftype):
-        return ExecutionResult(False, codes.BAD_ARG, "Encountered invalid keyframe type: {0}".format(kftype))
+        return ExecutionResult(False, codes.BAD_ARG,
+                               "Encountered invalid keyframe type: {0}".format(kftype))
+
+    @staticmethod
+    def keyframe_exception(exception):
+        return ExecutionResult(False, codes.BAD_ARG, exception.message)
 
     @staticmethod
     def no_such_context(context_name):
-        return ExecutionResult(False, codes.NO_CTX, "No registered context named: {0}".format(context_name))
+        return ExecutionResult(False, codes.NO_CTX,
+                               "No registered context named: {0}".format(context_name))
 
 
 class KeyFrame:
 
-    def __init__(self, start, end, duration,
-                 effectors, frame, axis_mask, kftype):
+    def __init__(self, start, end, duration, effector, frame, axis_mask,
+                 kftype, with_previous=False):
         self.start = start
         self.end = end
         self.duration = duration
-        self.effectors = effectors
+        self.effector = effector
         self.frame = frame
         self.axis_mask = axis_mask
         self.kftype = kftype
+        self.with_previous = with_previous
 
     def is_complete(self):
         if self.end is None:
             return False
         elif not self.duration or self.duration < 0:
             return False
-        elif not self.effectors:
+        elif self.effector not in const.EFFECTORS:
             return False
         elif not self.kftype:
             return False
@@ -102,9 +111,9 @@ class Plane:
         :return: The plane containing the 3 specified points, or None
             if two or more of the points were collinear.
         """
-        p1 = to_point(p1)
-        p2 = to_point(p2)
-        p3 = to_point(p3)
+        p1 = np.array(to_point(p1))
+        p2 = np.array(to_point(p2))
+        p3 = np.array(to_point(p3))
 
         u = p3 - p2
         v = p2 - p1

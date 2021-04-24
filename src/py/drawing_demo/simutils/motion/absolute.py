@@ -304,7 +304,7 @@ class AbsoluteSequenceContext(MotionSequenceContext):
     def motion_service(self):
         """Gets the motion service."""
         if self._service is None:
-            self._service = self.session.service("SIMMotorControl")
+            self._service = self.session.service("SIMMotion")
         return self._service
 
     @property
@@ -378,11 +378,11 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             invoke_list = [self._new_invocation(keyframes[0], motion_proxy)]
             idx = 0
             last = keyframes[0]
-            effectors = set(last.effectors)
+            effectors = set(last.effector)
             thresholds = context.get_thresholds() or 0.001
 
             for current in keyframes:
-                curr_effectors = set(current.effectors)
+                curr_effectors = set(current.effector)
                 if current.kftype == last.kftype and curr_effectors == effectors:
                     if not current.start or idx == 0:
                         self._append(invoke_list[idx], current)
@@ -429,7 +429,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
 
     def _new_invocation(self, firstkf, motion_proxy):
         args = new_invocation_args()
-        args[EFFECTORS].extend(firstkf.effectors)
+        args[EFFECTORS].extend(firstkf.effector)
         if firstkf.start:
             args[PATHS].append(firstkf.start)
             args[FRAMES].append(firstkf.frame)

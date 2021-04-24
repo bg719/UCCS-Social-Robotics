@@ -11,13 +11,13 @@ from simutils.motion.absolute import *
 
 
 # noinspection PyPep8Naming
-class SIMMotorControl(object):
-    """A SIMYAN NAOqi service providing supplemental motor control services."""
-    APP_ID = "org.uccs.simyan.SIMMotorControl"
+class SIMMotion(object):
+    """A SIMYAN NAOqi service providing supplemental motion services."""
+    APP_ID = "org.uccs.simyan.SIMMotion"
 
     def __init__(self, qiapp):
         """
-        Initializes a new instance of the SIMMotorControl service.
+        Initializes a new instance of the SIMMotion service.
 
         :param qiapp: (qi.Application) The hosting qi application.
         """
@@ -34,11 +34,6 @@ class SIMMotorControl(object):
             # PlanarSequenceHandler()
         ]
 
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
-    def repeat(self, string):
-	self.s.ALTextToSpeech.say(string)
-	return True	
-
     @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
     def registerContext(self, context):
         """
@@ -49,7 +44,6 @@ class SIMMotorControl(object):
         :return: True if the context was registered successfully;
             otherwise, False.
         """
-	# self.s.ALTextToSpeech.say("We got to registration!")
         if not self._can_register(context):
             return False
         return self._register_context(context)
@@ -116,7 +110,7 @@ class SIMMotorControl(object):
         result = None
         try:
 	    self.logger.info('Executing motion sequence for context: {0}'.format(context_name))
-            result = handler.handle_seq(context, sequence, self.s.ALMotion, self.s.ALRobotPosture)
+            result = handler.handle_sequence(context, sequence, self.s.ALMotion, self.s.ALRobotPosture)
 	    self.logger.info('Execution result: {0} - {1}'.format(result.success, result.message))
         except Exception as e:
 	    self.logger.info('Exception while executing sequence for context {0}. Message: {1}'.format(context_name, e.message))
@@ -129,13 +123,13 @@ class SIMMotorControl(object):
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
         """Stop the service."""
-        self.logger.info("SIMMotorControl stopped by request.")
+        self.logger.info("SIMMotion stopped by request.")
         self.qiapp.stop()
 
     @qi.nobind
     def on_stop(self):
         """Cleanup resources."""
-        self.logger.info("SIMMotorControl finished.")
+        self.logger.info("SIMMotion finished.")
 
     @qi.nobind
     def _can_register(self, context):
@@ -184,4 +178,4 @@ class SIMMotorControl(object):
 
 
 if __name__ == "__main__":
-    stk.runner.run_service(SIMMotorControl)
+    stk.runner.run_service(SIMMotion)

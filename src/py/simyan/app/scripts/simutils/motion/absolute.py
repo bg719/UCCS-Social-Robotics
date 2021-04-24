@@ -28,8 +28,8 @@ class AbsoluteSequence(MotionSequence):
         self.axis_mask = axis_mask
         self._keyframes = []
 
-    def new_position_keyframe(self, start, end, duration,
-                              effectors=None, frame=None, axis_mask=None):
+    def new_position_keyframe(self, start, end, duration, effectors=None,
+                              frame=None, axis_mask=None, with_previous=False):
         """
         Adds a new keyframe between the provided starting and ending
         absolute positions with the specified duration.
@@ -45,6 +45,11 @@ class AbsoluteSequence(MotionSequence):
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this sequence.
+        :param with_previous: (bool) If True, the motion defined
+            by the keyframe will be executed 1) simultaneously with
+            the previous motion if the previous motion was for a
+            different effector, or 2) after the previous motion if
+            if was for the same effector.
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
@@ -60,8 +65,8 @@ class AbsoluteSequence(MotionSequence):
         if not axis_mask:
             axis_mask = self.axis_mask
 
-        keyframe = KeyFrame(start, end, duration, effectors, frame,
-                            axis_mask, const.KFTYPE_ABSOLUTE_POSITION)
+        keyframe = KeyFrame(start, end, duration, effectors, frame, axis_mask,
+                            const.KFTYPE_ABSOLUTE_POSITION, with_previous)
 
         if not keyframe.is_complete():
             return False
@@ -70,7 +75,7 @@ class AbsoluteSequence(MotionSequence):
         return True
 
     def next_position_keyframe(self, end, duration, effectors=None,
-                               frame=None, axis_mask=None):
+                               frame=None, axis_mask=None, with_previous=True):
         """
         Adds a new keyframe to the sequence which uses the ending position
         of the previous keyframe as the starting position and moves to the
@@ -86,14 +91,19 @@ class AbsoluteSequence(MotionSequence):
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this sequence.
+        :param with_previous: (bool) If True, the motion defined
+            by the keyframe will be executed 1) simultaneously with
+            the previous motion if the previous motion was for a
+            different effector, or 2) after the previous motion if
+            if was for the same effector.
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
-        return self.new_position_keyframe(
-            None, end, duration, effectors, frame, axis_mask)
+        return self.new_position_keyframe(None, end, duration, effectors,
+                                          frame, axis_mask, with_previous)
 
-    def new_transform_keyframe(self, start, end, duration,
-                               effectors=None, frame=None, axis_mask=None):
+    def new_transform_keyframe(self, start, end, duration, effectors=None,
+                               frame=None, axis_mask=None, with_previous=False):
         """
         Adds a new keyframe between the provided starting and ending
         absolute transforms with the specified duration.
@@ -109,6 +119,11 @@ class AbsoluteSequence(MotionSequence):
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this sequence.
+        :param with_previous: (bool) If True, the motion defined
+            by the keyframe will be executed 1) simultaneously with
+            the previous motion if the previous motion was for a
+            different effector, or 2) after the previous motion if
+            if was for the same effector.
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
@@ -127,7 +142,7 @@ class AbsoluteSequence(MotionSequence):
             axis_mask = self.axis_mask
 
         keyframe = KeyFrame(start, end, duration, effectors, frame,
-                            axis_mask, const.KFTYPE_ABSOLUTE_TRANSFORM)
+                            axis_mask, const.KFTYPE_ABSOLUTE_TRANSFORM, with_previous)
 
         if not keyframe.is_complete():
             return False
@@ -136,7 +151,7 @@ class AbsoluteSequence(MotionSequence):
         return True
 
     def next_transform_keyframe(self, end, duration, effectors=None,
-                                frame=None, axis_mask=None):
+                                frame=None, axis_mask=None, with_previous=True):
         """
         Adds a new keyframe to the sequence which uses the ending position
         of the previous keyframe as the starting position and moves to the
@@ -152,11 +167,16 @@ class AbsoluteSequence(MotionSequence):
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this sequence.
+        :param with_previous: (bool) If True, the motion defined
+            by the keyframe will be executed 1) simultaneously with
+            the previous motion if the previous motion was for a
+            different effector, or 2) after the previous motion if
+            if was for the same effector.
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
         return self.new_transform_keyframe(
-            None, end, duration, effectors, frame, axis_mask)
+            None, end, duration, effectors, frame, axis_mask, with_previous)
 
     def add_keyframe(self, keyframe):
         """
@@ -190,14 +210,14 @@ class AbsoluteSequence(MotionSequence):
         if not keyframe.is_complete():
             return False
         elif keyframe.kftype == const.KFTYPE_ABSOLUTE_POSITION:
-	    ok_start = True
-	    if keyframe.start is not None:
-		ok_start = len(keyframe.start) == 6
+            ok_start = True
+            if keyframe.start is not None:
+                ok_start = len(keyframe.start) == 6
             return ok_start and len(keyframe.end) == 6
         elif keyframe.kftype == const.KFTYPE_ABSOLUTE_TRANSFORM:
             ok_start = True
-	    if keyframe.start is not None:
-		ok_start = len(keyframe.start) == 12
+            if keyframe.start is not None:
+                ok_start = len(keyframe.start) == 12
             return ok_start and len(keyframe.end) == 12
         else:
             return False
@@ -205,8 +225,8 @@ class AbsoluteSequence(MotionSequence):
 
 class AbsoluteSequenceContext(MotionSequenceContext):
 
-    def __init__(self, session, name, initial_pose=const.POSE_STAND_INIT,
-                 motion_proxy=None, thresholds=0.001, extensive_validation=True):
+    def __init__(self, name, initial_pose=const.POSE_STAND_INIT,
+                 thresholds=0.001, extensive_validation=True):
         """
         Initializes a new absolute sequence context instance.
 
@@ -231,7 +251,6 @@ class AbsoluteSequenceContext(MotionSequenceContext):
                 - Position vectors have 6 elements
                 - Transform vectors have 12 elements
 
-        :param session: (qi.Session) The qi session.
         :param name: (str) The name of the context.
         :param initial_pose: (Union[str, Callable]) Either
             the string identifier for a predefined pose or
@@ -247,12 +266,11 @@ class AbsoluteSequenceContext(MotionSequenceContext):
             extensive validation before sending sequences
             to the motion service.
         """
-        # if not session:
-        #     raise TypeError('The session cannot be None.')
-
+        # validate name
         if not isinstance(name, str):
             raise TypeError('Invalid type for name.')
 
+        # validate initial pose
         if isinstance(initial_pose, str) and \
                 initial_pose in const.PREDEFINED_POSES:
             self._initial_pose = initial_pose
@@ -261,15 +279,18 @@ class AbsoluteSequenceContext(MotionSequenceContext):
         else:
             raise TypeError('Invalid initial pose.')
 
+        # validate threshold
         if isinstance(thresholds, float):
             self._thresholds = [[thresholds] * 6, [thresholds] * 12]
         elif isinstance(thresholds, (list, tuple)):
+            # check position threshold
             position = thresholds[0]
             if isinstance(position, float):
                 position = [position] * 6
             elif len(position) != 6:
                 raise ValueError('Wrong length vector of positional threshold values.')
 
+            # check transform threshold
             transform = thresholds[1]
             if isinstance(transform, float):
                 transform = [transform] * 12
@@ -280,9 +301,7 @@ class AbsoluteSequenceContext(MotionSequenceContext):
         else:
             raise TypeError('Invalid thresholds specifier.')
 
-        # self._session = session
         self._name = name
-        # self._service = motion_proxy
         self._extensive_validation = extensive_validation
 
     def check_sequence(self, sequence, extensive=False):
@@ -303,18 +322,6 @@ class AbsoluteSequenceContext(MotionSequenceContext):
             return all(AbsoluteSequence.check_keyframe(kf)
                        for kf in sequence.get_keyframes())
         return True
-
-    # @property
-    # def motion_service(self):
-    #     """Gets the motion service."""
-    #     if self._service is None:
-    #         self._service = self.session.service("SIMMotorControl")
-    #     return self._service
-
-    # @property
-    # def session(self):
-    #     """Gets the qi session for this context."""
-    #     return self._session
 
     def extensive_validation(self):
         """Indicates whether extensive validation will be performed
@@ -348,17 +355,13 @@ class AbsoluteSequenceContext(MotionSequenceContext):
             if the initial position was set successfully, False if
             setting the initial position failed.
         """
-	print('we got here')
         if callable(self._initial_pose):
             try:
-		print('calling initial pose')
                 self._initial_pose()
-		print('called initial pose')
                 return True
             except:
                 return False
         else:
-	    print('returning initial pose')
             return self._initial_pose
 
     def get_thresholds(self):
@@ -376,66 +379,87 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             const.KFTYPE_ABSOLUTE_TRANSFORM
         ]
 
-    def handle_seq(self, context, sequence, motion_proxy, posture_proxy):
+    def handle_sequence(self, context, sequence, motion_proxy, posture_proxy):
+        """
+        Handles the execution of the specified motion `sequence` within the
+        scope of the provided motion sequence `context`.
+
+        :param context: (AbsoluteSequenceContext)
+            The absolute motion sequence context.
+        :param sequence: (AbsoluteSequence)
+            The absolute motion sequence.
+        :param motion_proxy: (ALMotion)
+            The motion service or proxy.
+        :param posture_proxy: (ALRobotPosture)
+            The posture service or proxy.
+        :return: (models.ExecutionResult)
+            The result of executing the sequence.
+        """
         keyframes = sequence.get_keyframes()
 
         if not keyframes or len(keyframes) == 0:
             return ExecutionResult.error_result('No keyframes in sequence.')
 
+        # construct ALMotion invocations
         try:
             invoke_list = [self._new_invocation(keyframes[0], motion_proxy)]
             idx = 0
             last = keyframes[0]
-            effectors = set(last.effectors)
-            thresholds = context.get_thresholds() or 0.001
-
-	    print('checkpoint 1')
+            # thresholds = context.get_thresholds() or 0.001
 
             for current in keyframes:
-                curr_effectors = set(current.effectors)
-                if current.kftype == last.kftype and curr_effectors == effectors:
-		    print('adding to invocation')
-                    if not current.start or idx == 0:
-                        self._append(invoke_list[idx], current)
-			print('appended')
-                    elif self._are_same(current.start, last.end, thresholds):
-                        self._append(invoke_list[idx], current)
-                    last = current
-                    continue
-		print('new invocation')
-                idx += 1
-                invoke_list[idx] = self._new_invocation(current, motion_proxy)
-                self._append(invoke_list[idx], current)
-                effectors = curr_effectors
+                if current.with_previous and (current.start is None or idx == 0):
+                    self._append(invoke_list[idx], current, last)
+                else:
+                    idx += 1
+                    invoke_list[idx] = self._new_invocation(current, motion_proxy)
+                    self._append(invoke_list[idx], current, last)
+                last = current
+        except KeyframeException as e:
+            return ExecutionResult.keyframe_exception(e)
         except KeyframeTypeError as e:
             return ExecutionResult.invalid_kftype(e.kftype)
         except Exception as e:
             return ExecutionResult.error_result(
                 'Exception while attempting to generate sequence invocations. ' +
                 'Message: {0}'.format(e.message))
-	
-	print('setting initial posture')
-        set_pose = context.get_or_set_initial_pose()
-	print('initial posture set')
 
-        if isinstance(set_pose, str):
-            posture_proxy.goToPosture(set_pose, 0.5)
-        elif not set_pose:
+        # set initial pose
+        try:
+            set_pose = context.get_or_set_initial_pose()
+
+            if isinstance(set_pose, str):
+                success = posture_proxy.goToPosture(set_pose, 0.5)
+                if not success:
+                    return ExecutionResult.error_result(
+                        'ALRobotPosture reported failure to go to posture: {0}'.format(set_pose))
+            elif not set_pose:
+                return ExecutionResult.error_result(
+                    'Context reported failure to set initial position. ' +
+                    'Aborting execution of motion sequence.')
+        except Exception as e:
             return ExecutionResult.error_result(
-                'Context reported failure to set initial position. ' +
+                'Exception while attempting to set initial position.' +
                 'Aborting execution of motion sequence.')
-	
+
+        # execute motion sequence
         for invocation in invoke_list:
             if invocation[TYPE] == const.KFTYPE_ABSOLUTE_POSITION:
-		e, f, p, m, t = invocation[ARGS]
-		for i in range(len(e)):
-                    motion_proxy.positionInterpolations(e[i], f[i], p[i], m[i], t[i])
+                motion_proxy.positionInterpolations(*invocation[ARGS])
             else:
                 motion_proxy.transformInterpolations(*invocation[ARGS])
 
         return ExecutionResult.success_result()
 
     def handles_type(self, ctype):
+        """
+        Determines whether this handler can handle the specified
+        motion sequence context type.
+
+        :param ctype: (str) The motion sequence context type.
+        :return: True if this handler can handle the context type;
+            otherwise, False.
+        """
         return ctype == const.CTYPE_ABSOLUTE
 
     def _get_position_time(self, position, motion_proxy):
@@ -444,48 +468,70 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
     def _get_transform_time(self, transform, motion_proxy):
         return 3
 
-    def _new_invocation(self, firstkf, motion_proxy):
+    def _new_invocation(self, keyframe, motion_proxy):
         args = new_invocation_args()
-        if firstkf.start:
-            args[EFFECTORS].append(firstkf.effectors[0])
-            args[PATHS].append(firstkf.start)
-            args[FRAMES].append(firstkf.frame)
+        if keyframe.start:
+            args[EFFECTORS].append(keyframe.effector)
+            args[PATHS].append([keyframe.start])
+            args[FRAMES].append(keyframe.frame)
             args[MASKS].append(const.AXIS_MASK_VEL)
-            if firstkf.kftype == const.KFTYPE_ABSOLUTE_POSITION:
-                move_time = self._get_position_time(firstkf.start, motion_proxy)
-                args[TIMES].append(move_time)
-            elif firstkf.kftype == const.KFTYPE_ABSOLUTE_TRANSFORM:
-                move_time = self._get_transform_time(firstkf.start, motion_proxy)
-                args[TIMES].append(move_time)
+            if keyframe.kftype == const.KFTYPE_ABSOLUTE_POSITION:
+                move_time = self._get_position_time(keyframe.start, motion_proxy)
+                args[TIMES].append([move_time])
+            elif keyframe.kftype == const.KFTYPE_ABSOLUTE_TRANSFORM:
+                move_time = self._get_transform_time(keyframe.start, motion_proxy)
+                args[TIMES].append([move_time])
             else:
-                raise KeyframeTypeError(firstkf.kftype)
-        return firstkf.kftype, args
+                raise KeyframeTypeError(keyframe.kftype)
+        return keyframe.kftype, args
 
     @staticmethod
-    def _append(invocation, keyframe):
-	print(invocation)
-	invocation[ARGS][EFFECTORS].append(keyframe.effectors[0])
-        invocation[ARGS][PATHS].append(keyframe.end)
-        invocation[ARGS][FRAMES].append(keyframe.frame)
-        invocation[ARGS][MASKS].append(keyframe.axis_mask)
-        invocation[ARGS][TIMES].append(keyframe.duration)
+    def _append(invocation, current, previous):
+        if current.kftype != previous.kftype:
+            raise KeyframeException.type_mismatch(current, previous)
+
+        # if the same effector is specified, simply add to
+        # it's path and time lists (frame and axis mask discrepancies are
+        # currently ignored)
+        if current.effector == previous.effector:
+            # add the current position to the path list for the effector
+            invocation[ARGS][PATHS][-1].append(current.end)
+            # add the relative time to move to the position
+            times = invocation[ARGS][PATHS][-1]
+            times.append(current.duration + times[-1])
+
+        # if we already have the effector declared, find the index
+        # of it's lists and add the current position and time
+        elif current.effector in invocation[ARGS][EFFECTORS]:
+            idx = invocation[ARGS][EFFECTORS].index(current.effector)
+            invocation[ARGS][PATHS][idx].append(current.end)
+            times = invocation[ARGS][PATHS][idx]
+            times.append(current.duration + times[-1])
+
+        # otherwise, we add the new effector to the invocation
+        else:
+            invocation[ARGS][EFFECTORS].append(current.effector)
+            invocation[ARGS][PATHS].append([current.end])
+            invocation[ARGS][FRAMES].append(current.frame)
+            invocation[ARGS][MASKS].append(current.axis_mask)
+            invocation[ARGS][TIMES].append(current.duration)
 
     @staticmethod
     def _are_same(p1, p2, thresholds=0.001):
-        p1_len = len(p1)
-        if p1_len != len(p2):
+        len_p1 = len(p1)
+        if len_p1 != len(p2):
             return False
         if isinstance(thresholds, float):
             thresholds = [thresholds] * len(p1)
         elif isinstance(thresholds, (list, tuple)) and len(thresholds) == 2:
-            if p1_len == 6:
+            if len_p1 == 6:
                 thresholds = thresholds[0]
-            elif p1_len == 12:
+            elif len_p1 == 12:
                 thresholds = thresholds[1]
         else:
-            thresholds = [0] * p1_len
+            thresholds = [0] * len_p1
 
-        for i in range(p1_len):
+        for i in range(len_p1):
             try:
                 threshold = thresholds[i]
             except IndexError:

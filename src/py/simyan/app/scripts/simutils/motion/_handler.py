@@ -32,16 +32,32 @@ def new_invocation_args():
     return [], [], [], [], []
 
 
+class KeyframeException(Exception):
+    """An exception raised due to keyframe errors."""
+
+    def __init__(self, message):
+        self.message = message
+
+    @staticmethod
+    def type_mismatch(current, previous):
+        return KeyframeException(
+            "Keyframe type mismatch. Cannot execute keyframe " +
+            "of type {0} with keyframe of type {1}.".format(
+                current.kftype, previous.kftype))
+
+
 class KeyframeTypeError(ValueError):
     """Invalid keyframe type provided."""
 
-    def __init__(self, kftype):
+    def __init__(self, kftype, message=None):
         """
         Initializes a new keyframe type error.
 
         :param kftype: (str) The invalid keyframe type.
+        :param message: (str) A message describing the error.
         """
         self.kftype = kftype
+        self.message = message
 
 
 class MotionSequenceHandler:
@@ -49,7 +65,7 @@ class MotionSequenceHandler:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def handle_seq(self, context, sequence, motion_proxy, posture_proxy):
+    def handle_sequence(self, context, sequence, motion_proxy, posture_proxy):
         """
         Handles the execution of the specified motion `sequence` within the
         scope of the provided motion sequence `context`.

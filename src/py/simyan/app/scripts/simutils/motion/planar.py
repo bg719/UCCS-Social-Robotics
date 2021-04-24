@@ -183,7 +183,7 @@ class PlanarSequenceContext(MotionSequenceContext):
     def motion_service(self):
         """Gets the motion service."""
         if self._service is None:
-            self._service = self.session.service("SIMMotorControl")
+            self._service = self.session.service("SIMMotion")
         return self._service
 
     @property
@@ -427,14 +427,14 @@ class PlanarSequenceHandler(MotionSequenceHandler):
         """Initializes a new planar motion sequence handler instance."""
         pass
 
-    def handle_seq(self, context, sequence, motion_proxy, posture_proxy):
+    def handle_sequence(self, context, sequence, motion_proxy, posture_proxy):
         """
         Handles the execution of the specified planar motion sequence within
         the scope of the provided motion sequence context.
 
-        :param context: (contexts.PlanarMotionSequenceContext)
+        :param context: (PlanarSequenceContext)
             The planar motion sequence context.
-        :param sequence: (sequences.PlanarSequence)
+        :param sequence: (PlanarSequence)
             The motion sequence.
         :param motion_proxy: (ALMotion)
             The motion service or proxy.

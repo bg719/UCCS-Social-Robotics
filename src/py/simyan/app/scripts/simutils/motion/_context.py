@@ -13,7 +13,7 @@ class MotionSequenceContext(object):
     @abc.abstractproperty
     def extensive_validation(self):
         """Indicates whether extensive validation will be performed
-         before sequences are sent to the motion service."""
+         before sequences are executed."""
         return False
 
     @abc.abstractmethod
@@ -21,7 +21,7 @@ class MotionSequenceContext(object):
         """
         Checks that the sequence is valid.
 
-        :param sequence: (sequence.MotionSequence)
+        :param sequence: (_sequence.MotionSequence)
             The motion sequence.
         :param extensive: (bool) A flag indicating
             whether to recheck each key frame in the
@@ -36,7 +36,10 @@ class MotionSequenceContext(object):
         Sends the motion sequence to the motion service to be
         executed and returns the result.
 
-        :param sequence: The motion sequence.
+        :param sequence: (_sequence.MotionSequence) The motion
+            sequence.
+        :param motion_service: (SIMMotion) The SIMYAN motion
+            service.
         :return: The execution result or None if the motion
             service is not available.
         """
@@ -83,26 +86,29 @@ class MotionSequenceContext(object):
         """
         Registers this context with the motion service.
 
+        :param motion_service: (SIMMotion) The SIMYAN motion
+            service.
         :return: True if the registration was successful;
             otherwise, False.
         """
-	try:
-	    if motion_service is None:
-	        return False
-	    # if motion_service.repeat("About to register context:"):
-	    return motion_service.registerContext(self)
+        try:
+            if motion_service is None:
+                return False
+            return motion_service.registerContext(self)
         except Exception as e:
-	    print(e.message, e.args)
-	    return False
+            print(e.message, e.args)
+            return False
 
-    def unregister(self):
+    def unregister(self, motion_service):
         """
         Unregisters this context from the motion service.
 
-        :return: True if this context was formerly registered and
-            successfully unregistered; otherwise, False.
+        :param motion_service: (SIMMotion) The SIMYAN motion
+            service.
+        :return: True if this context was formerly registered
+            and successfully unregistered; otherwise, False.
         """
-        if self.motion_service is None:
+        if motion_service is None:
             return False
-        return self.motion_service.removeContext(self.get_name)
+        return motion_service.removeContext(self.get_name())
 

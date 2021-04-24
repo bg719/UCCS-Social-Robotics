@@ -7,7 +7,7 @@ import stk.services
 import stk.logging
 
 # SIMYAN service modules
-from movement import SIMMotorControl
+from motion import SIMMotion
 from speech import SIMSpeech
 from vision import SIMVision
 
@@ -29,7 +29,7 @@ class SIMActivityManager(object):
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
         self.scoped_services = [
-            ServiceScope(qiapp, SIMMotorControl),
+            ServiceScope(qiapp, SIMMotion),
             # ServiceScope(qiapp, SIMSpeech),
             # ServiceScope(qiapp, SIMVision)
         ]

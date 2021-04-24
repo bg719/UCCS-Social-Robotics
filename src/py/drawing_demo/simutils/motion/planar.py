@@ -183,7 +183,7 @@ class PlanarSequenceContext(MotionSequenceContext):
     def motion_service(self):
         """Gets the motion service."""
         if self._service is None:
-            self._service = self.session.service("SIMMotorControl")
+            self._service = self.session.service("SIMMotion")
         return self._service
 
     @property
