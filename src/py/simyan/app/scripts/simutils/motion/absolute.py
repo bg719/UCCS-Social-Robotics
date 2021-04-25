@@ -11,24 +11,22 @@ from _sequence import *
 
 class AbsoluteSequence(MotionSequence):
 
-    def __init__(self, effectors, frame, axis_mask):
+    def __init__(self, effector, frame, axis_mask):
         """
         Initializes a new absolute motion sequence instance.
 
-        :param effectors: (Union[str, Iterable[str]])
-            The default effector(s) targeted by this sequence.
-            Either the string identifier for a single effector
-            or a list of effector identifiers.
-        :param frame: (int) The spatial frame.
+        :param effector: (str) The default effector targeted
+            by this sequence.
+        :param frame: (int) The default spatial frame.
         :param axis_mask: (int) The default axis mask for
             this sequence.
         """
-        self.effectors = effectors
+        self.effector = effector
         self.frame = frame
         self.axis_mask = axis_mask
         self._keyframes = []
 
-    def new_position_keyframe(self, start, end, duration, effectors=None,
+    def new_position_keyframe(self, start, end, duration, effector=None,
                               frame=None, axis_mask=None, with_previous=False):
         """
         Adds a new keyframe between the provided starting and ending
@@ -37,7 +35,7 @@ class AbsoluteSequence(MotionSequence):
         :param start: (Iterable[float]) The starting position.
         :param end: (Iterable[float]) The ending position.
         :param duration: (float) The duration of the keyframe.
-        :param effectors: (Union[List[str], str])
+        :param effector: (Union[List[str], str])
             The effector(s) targeted by the keyframe. Overrides
             the default effectors for this sequence.
         :param frame: (int) The spatial frame. Overrides the
@@ -56,8 +54,8 @@ class AbsoluteSequence(MotionSequence):
         start = to_point(start, 6)
         end = to_point(end, 6)
 
-        if not effectors:
-            effectors = self.effectors
+        if not effector:
+            effector = self.effector
 
         if not frame:
             frame = self.frame
@@ -65,7 +63,7 @@ class AbsoluteSequence(MotionSequence):
         if not axis_mask:
             axis_mask = self.axis_mask
 
-        keyframe = KeyFrame(start, end, duration, effectors, frame, axis_mask,
+        keyframe = KeyFrame(start, end, duration, effector, frame, axis_mask,
                             const.KFTYPE_ABSOLUTE_POSITION, with_previous)
 
         if not keyframe.is_complete():
@@ -74,7 +72,7 @@ class AbsoluteSequence(MotionSequence):
         self._keyframes.append(keyframe)
         return True
 
-    def next_position_keyframe(self, end, duration, effectors=None,
+    def next_position_keyframe(self, end, duration, effector=None,
                                frame=None, axis_mask=None, with_previous=True):
         """
         Adds a new keyframe to the sequence which uses the ending position
@@ -83,7 +81,7 @@ class AbsoluteSequence(MotionSequence):
 
         :param end: (Iterable[float]) The ending position.
         :param duration: (float) The duration of the keyframe.
-        :param effectors: (Union[List[str], str])
+        :param effector: (Union[List[str], str])
             The effector(s) targeted by the keyframe. Overrides
             the default effectors for this sequence.
         :param frame: (int) The spatial frame. Overrides the
@@ -99,10 +97,10 @@ class AbsoluteSequence(MotionSequence):
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
-        return self.new_position_keyframe(None, end, duration, effectors,
+        return self.new_position_keyframe(None, end, duration, effector,
                                           frame, axis_mask, with_previous)
 
-    def new_transform_keyframe(self, start, end, duration, effectors=None,
+    def new_transform_keyframe(self, start, end, duration, effector=None,
                                frame=None, axis_mask=None, with_previous=False):
         """
         Adds a new keyframe between the provided starting and ending
@@ -111,8 +109,8 @@ class AbsoluteSequence(MotionSequence):
         :param start: (Iterable[float]) The starting transform.
         :param end: (Iterable[float]) The ending transform.
         :param duration: (float) The duration of the keyframe.
-        :param effectors: (Union[List[str], str])
-            The effector(s) targeted by the keyframe. Overrides
+        :param effector: (Union[List[str], str])
+            The effector targeted by the keyframe. Overrides
             the default effectors for this sequence.
         :param frame: (int) The spatial frame. Overrides the
             default frame for this sequence.
@@ -132,8 +130,8 @@ class AbsoluteSequence(MotionSequence):
         start = to_point(start, 12)
         end = to_point(end, 12)
 
-        if not effectors:
-            effectors = self.effectors
+        if not effector:
+            effector = self.effector
 
         if not frame:
             frame = self.frame
@@ -141,7 +139,7 @@ class AbsoluteSequence(MotionSequence):
         if not axis_mask:
             axis_mask = self.axis_mask
 
-        keyframe = KeyFrame(start, end, duration, effectors, frame,
+        keyframe = KeyFrame(start, end, duration, effector, frame,
                             axis_mask, const.KFTYPE_ABSOLUTE_TRANSFORM, with_previous)
 
         if not keyframe.is_complete():
@@ -150,7 +148,7 @@ class AbsoluteSequence(MotionSequence):
         self._keyframes.append(keyframe)
         return True
 
-    def next_transform_keyframe(self, end, duration, effectors=None,
+    def next_transform_keyframe(self, end, duration, effector=None,
                                 frame=None, axis_mask=None, with_previous=True):
         """
         Adds a new keyframe to the sequence which uses the ending position
@@ -159,9 +157,9 @@ class AbsoluteSequence(MotionSequence):
 
         :param end: (Iterable[float]) The ending transform.
         :param duration: (float) The duration of the keyframe.
-        :param effectors: (Union[List[str], str])
-            The effector(s) targeted by the keyframe. Overrides
-            the default effectors for this sequence.
+        :param effector: (Union[List[str], str])
+            The effector targeted by the keyframe. Overrides
+            the default effector for this sequence.
         :param frame: (int) The spatial frame. Overrides the
             default frame for this sequence.
         :param axis_mask: (int) The axis mask to use for this
@@ -176,7 +174,7 @@ class AbsoluteSequence(MotionSequence):
             otherwise False.
         """
         return self.new_transform_keyframe(
-            None, end, duration, effectors, frame, axis_mask, with_previous)
+            None, end, duration, effector, frame, axis_mask, with_previous)
 
     def add_keyframe(self, keyframe):
         """
@@ -379,15 +377,15 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             const.KFTYPE_ABSOLUTE_TRANSFORM
         ]
 
-    def handle_sequence(self, context, sequence, motion_proxy, posture_proxy):
+    def handle_sequence(self, sequence, context, motion_proxy, posture_proxy):
         """
         Handles the execution of the specified motion `sequence` within the
         scope of the provided motion sequence `context`.
 
-        :param context: (AbsoluteSequenceContext)
-            The absolute motion sequence context.
         :param sequence: (AbsoluteSequence)
             The absolute motion sequence.
+        :param context: (AbsoluteSequenceContext)
+            The absolute motion sequence context.
         :param motion_proxy: (ALMotion)
             The motion service or proxy.
         :param posture_proxy: (ALRobotPosture)
@@ -412,7 +410,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
                     self._append(invoke_list[idx], current, last)
                 else:
                     idx += 1
-                    invoke_list[idx] = self._new_invocation(current, motion_proxy)
+                    invoke_list.append(self._new_invocation(current, motion_proxy))
                     self._append(invoke_list[idx], current, last)
                 last = current
         except KeyframeException as e:
@@ -470,11 +468,11 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
 
     def _new_invocation(self, keyframe, motion_proxy):
         args = new_invocation_args()
+        args[EFFECTORS].append(keyframe.effector)
+        args[FRAMES].append(keyframe.frame)
+        args[MASKS].append(const.AXIS_MASK_VEL)
         if keyframe.start:
-            args[EFFECTORS].append(keyframe.effector)
             args[PATHS].append([keyframe.start])
-            args[FRAMES].append(keyframe.frame)
-            args[MASKS].append(const.AXIS_MASK_VEL)
             if keyframe.kftype == const.KFTYPE_ABSOLUTE_POSITION:
                 move_time = self._get_position_time(keyframe.start, motion_proxy)
                 args[TIMES].append([move_time])
@@ -483,6 +481,9 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
                 args[TIMES].append([move_time])
             else:
                 raise KeyframeTypeError(keyframe.kftype)
+        else:
+            args[PATHS].append([])
+            args[TIMES].append([])
         return keyframe.kftype, args
 
     @staticmethod
@@ -497,15 +498,18 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             # add the current position to the path list for the effector
             invocation[ARGS][PATHS][-1].append(current.end)
             # add the relative time to move to the position
-            times = invocation[ARGS][PATHS][-1]
-            times.append(current.duration + times[-1])
+            times = invocation[ARGS][TIMES][-1]
+            if len(times) > 0:
+                times.append(current.duration + times[-1])
+            else:
+                times.append(current.duration)
 
         # if we already have the effector declared, find the index
         # of it's lists and add the current position and time
         elif current.effector in invocation[ARGS][EFFECTORS]:
             idx = invocation[ARGS][EFFECTORS].index(current.effector)
             invocation[ARGS][PATHS][idx].append(current.end)
-            times = invocation[ARGS][PATHS][idx]
+            times = invocation[ARGS][TIMES][idx]
             times.append(current.duration + times[-1])
 
         # otherwise, we add the new effector to the invocation
@@ -514,7 +518,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             invocation[ARGS][PATHS].append([current.end])
             invocation[ARGS][FRAMES].append(current.frame)
             invocation[ARGS][MASKS].append(current.axis_mask)
-            invocation[ARGS][TIMES].append(current.duration)
+            invocation[ARGS][TIMES].append([current.duration])
 
     @staticmethod
     def _are_same(p1, p2, thresholds=0.001):
@@ -540,3 +544,27 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             if p1[i] - p2[i] > threshold:
                 return False
         return True
+
+
+if __name__ == '__main__':
+    seq = AbsoluteSequence('LArm', 2, 7)
+    points = [
+        [0.15457427501678467, 0.131572425365448, 0.5019456148147583,
+            -1.5897225141525269, -0.935154914855957, 0.20292489230632782],
+        [0.15036171674728394, 0.10574427992105484, 0.5386977791786194,
+            -1.668771505355835, -1.0586074590682983, 0.09279955923557281],
+        [0.16299599409103394, 0.0846848413348198, 0.5012325048446655,
+            -1.6748456954956055, -0.8622304797172546, -0.027583902701735497],
+        [0.15538376569747925, 0.13587330281734467, 0.5069384574890137,
+            -1.7119406461715698, -0.9142926931381226, 0.27707982063293457]
+    ]
+
+    for p in points:
+        seq.next_position_keyframe(p, 3)
+
+    seq.next_position_keyframe(points[0], 3, with_previous=False)
+    seq.next_position_keyframe(points[1], 5, 'RArm', 1, 63)
+
+    handler = AbsoluteSequenceHandler()
+
+    handler.handle_sequence(seq, None, None, None)
