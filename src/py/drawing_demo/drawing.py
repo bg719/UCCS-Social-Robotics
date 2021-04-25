@@ -69,9 +69,9 @@ class SIMDrawingDemo(object):
             context = AbsoluteSequenceContext(self.qiapp.session, self.APP_ID, initial_pose, extensive_validation=False)
             context.register()
 
-            triangle = shapes['triangle']
+            triangle = shapes['triangle']['leftHand']
             seq = AbsoluteSequence(
-                triangle['leftHand']['effectors'],
+                triangle['effector'],
                 triangle['frame'],
                 triangle['axisMask']
             )

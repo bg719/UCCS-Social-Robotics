@@ -5,7 +5,7 @@
     "description": "A triangle.",
     "leftHand": {
       "duration": 3,
-      "effectors": ["LArm"],
+      "effector": "LArm",
       "frame": 2,
       "axisMask": 7,
       "keyframes": [
@@ -37,7 +37,7 @@
     },
     "rightHand": {
       "duration": 3,
-      "effectors": ["RArm"],
+      "effector": "RArm",
       "frame": 2,
       "axisMask": 7,
       "keyframes": [
