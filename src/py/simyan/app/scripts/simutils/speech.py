@@ -1,7 +1,9 @@
 __version__ = "0.0.0"
-__author__ = 'anguyen7-99'
+__author__ = 'anguyen7-99, ancient-sentinel'
 
+import qi
 from enum import Enum
+from inspect import getargspec
 
 
 class QiState(Enum):
@@ -118,10 +120,81 @@ class QiChatBuilder:
         self.state= QiState.Dialog
         return self
 
-
     def build(self):
         """
         builds qiChat scripts
         :returns: qiChat script
         """
         return self.script
+
+
+class SpeechEvent:
+    """A speech event which invokes a callback when a particular word is recognized."""
+
+    def __init__(self, words, callback):
+        """
+        Initializes a new speech event.
+
+        :param words: ([Iterable[str]]) The list of words to be recognized.
+        :param callback: (Callable) A callback function which takes one or
+            two arguments. The first argument will always be the word that
+            was recognized. If the function accepts a second argument, the
+            confidence value will be passed as the second parameter.
+        """
+        if not callable(callback):
+            raise ValueError('Callback must be a callable function.')
+
+        self.callback = callback
+        self.words = list(words)
+        self.is_subscribed = False
+
+        self._arg_count = len(getargspec(callback).args)
+        self._id = None
+        self._promise = qi.Promise()
+        self._future = self._promise.future()
+        self._future.addCallback(self._call)
+        self._speech_service = None
+
+        if self._arg_count not in (1, 2):
+            raise ValueError('Callback must take only one or two arguments.')
+
+    def register(self, speech_service):
+        """
+        Registers this speech event to the provided speech service.
+
+        :param speech_service: (SIMSpeech) The speech service.
+        :return: True if the registration was successful; otherwise, False.
+        """
+        if speech_service:
+            self._speech_service = speech_service
+            self._id = speech_service.subscribe(self.words, self._promise)
+            self.is_subscribed = True
+            return True
+        else:
+            return False
+
+    def unregister(self):
+        """
+        Unregisters this speech event from the speech service.
+
+        :return: True if the event was unregistered successfully;
+            otherwise, False.
+        """
+        if self.is_subscribed and self._id is not None:
+            self.is_subscribed = False
+            return self._speech_service.unsubscribe(self._id)
+        else:
+            return False
+
+    def _call(self, future):
+        """
+        Calls the registered callback with the value set for the
+        future.
+
+        :param future: (qi.Future) The speech event future.
+        """
+        if future.hasValue():
+            if self._arg_count == 1:
+                self.callback(future.value()[0])
+            else:
+                self.callback(*future.value())

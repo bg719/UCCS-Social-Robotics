@@ -15,6 +15,7 @@ from drawing import SIMDrawingDemo
 
 # SIMYAN utilities
 from simutils.service import ServiceScope
+from simutils.speech import SpeechEvent
 from simutils.motion.absolute import *
 
 
@@ -29,8 +30,8 @@ class SIMActivityManager(object):
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
         self.scoped_services = [
-            ServiceScope(qiapp, SIMMotion),
-            # ServiceScope(qiapp, SIMSpeech),
+            # ServiceScope(qiapp, SIMMotion),
+            ServiceScope(qiapp, SIMSpeech),
             # ServiceScope(qiapp, SIMVision)
         ]
         self.activity = None
@@ -69,27 +70,16 @@ class SIMActivityManager(object):
     def on_start(self):
         # self.say_info("Starting Simyan. Registering services.")
         self._start_services()
-        # self._active_services(log=True)
 
-	if not self.s.SIMMotorControl.repeat("Called motor control"):
-	    # class MyObj:
-		# name = "My object"
-	    
-	    # obj = MyObj()
-	    context = AbsoluteSequenceContext(
-		self.qiapp.session, self.APP_ID, 
-		motion_proxy=self.s.SIMMotorControl, extensive_validation=False)
-	    self.s.SIMMotorControl.registerContext(context)
-	else:
-	    draw = ServiceScope(self.qiapp, SIMDrawingDemo)
-	    try:
-	        draw.create_scope()
-	    except Exception as e:
-	        self.logger.info(e.message)
-	        draw.close_scope()
+        se = SpeechEvent(['red', 'yellow', 'blue', 'green'], self.i_heard)
+        se.register(self.s.SIMSpeech)
+        self.say_info("Listening")
 
         self.events.connect("FrontTactilTouched", self.stop)
         # self.stop()
+
+    def i_heard(self, word):
+        self.say_info("I heard {0}".format(word))
 
     def stop(self, *args):
         """Standard way of stopping the application."""
