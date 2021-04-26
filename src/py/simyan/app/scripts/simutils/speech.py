@@ -3,7 +3,7 @@ __author__ = 'anguyen7-99, ancient-sentinel'
 
 import qi
 from enum import Enum
-from inspect import getargspec
+from inspect import getargspec, ismethod
 
 
 class QiState(Enum):
@@ -131,7 +131,7 @@ class QiChatBuilder:
 class SpeechEvent:
     """A speech event which invokes a callback when a particular word is recognized."""
 
-    def __init__(self, words, callback):
+    def __init__(self, words, callback, repeated=True):
         """
         Initializes a new speech event.
 
@@ -147,16 +147,23 @@ class SpeechEvent:
         self.callback = callback
         self.words = list(words)
         self.is_subscribed = False
+        self.repeated = repeated
 
         self._arg_count = len(getargspec(callback).args)
-        self._id = None
-        self._promise = qi.Promise()
-        self._future = self._promise.future()
-        self._future.addCallback(self._call)
-        self._speech_service = None
+        self._is_method = ismethod(callback)
 
-        if self._arg_count not in (1, 2):
+        if self._is_method:
+            allowed_count = (1, 2)
+        else:
+            allowed_count = (2, 3)
+
+        if self._arg_count not in allowed_count:
             raise ValueError('Callback must take only one or two arguments.')
+
+        self._subscription = None
+        self._id = None
+        self._future = None
+        self._speech_service = None
 
     def register(self, speech_service):
         """
@@ -167,7 +174,12 @@ class SpeechEvent:
         """
         if speech_service:
             self._speech_service = speech_service
-            self._id = speech_service.subscribe(self.words, self._promise)
+            self._subscription = speech_service.subscribe(self.words)
+
+            if self._subscription.id == -1:
+                return False
+
+            self._subscription.future.addCallback(self._call)
             self.is_subscribed = True
             return True
         else:
@@ -180,9 +192,9 @@ class SpeechEvent:
         :return: True if the event was unregistered successfully;
             otherwise, False.
         """
-        if self.is_subscribed and self._id is not None:
+        if self.is_subscribed:
             self.is_subscribed = False
-            return self._speech_service.unsubscribe(self._id)
+            return self._speech_service.unsubscribe(self._subscription.id)
         else:
             return False
 
@@ -194,7 +206,34 @@ class SpeechEvent:
         :param future: (qi.Future) The speech event future.
         """
         if future.hasValue():
-            if self._arg_count == 1:
+            if self._arg_count == 1 or (self._is_method and self._arg_count == 2):
                 self.callback(future.value()[0])
             else:
                 self.callback(*future.value())
+
+            self._subscription.reactivate(self.repeated).wait()
+            self._subscription.future.addCallback(self._call)
+
+
+class _SpeechSubscription:
+
+    def __init__(self, id):
+        self.id = id
+        self.future = None
+        self._reactivate = None
+
+    def reactivate(self, choice=True):
+        promise = qi.Promise()
+        self._reactivate.setValue((self.id, choice, promise))
+        return promise.future()
+
+    def reset(self, future):
+        if not id == -1:
+            self.future = future
+            self._reactivate = qi.Promise()
+            return self._reactivate.future()
+
+    @staticmethod
+    def error():
+        return _SpeechSubscription(-1)
+

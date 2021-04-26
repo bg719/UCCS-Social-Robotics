@@ -71,7 +71,11 @@ class SIMActivityManager(object):
         # self.say_info("Starting Simyan. Registering services.")
         self._start_services()
 
+        def other_i_heard(word):
+            print(word)
+
         se = SpeechEvent(['red', 'yellow', 'blue', 'green'], self.i_heard)
+        # se2 = SpeechEvent(['yes'], other_i_heard)
         se.register(self.s.SIMSpeech)
         self.say_info("Listening")
 
