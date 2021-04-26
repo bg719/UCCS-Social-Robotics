@@ -35,9 +35,9 @@ class AbsoluteSequence(MotionSequence):
         :param start: (Iterable[float]) The starting position.
         :param end: (Iterable[float]) The ending position.
         :param duration: (float) The duration of the keyframe.
-        :param effector: (Union[List[str], str])
-            The effector(s) targeted by the keyframe. Overrides
-            the default effectors for this sequence.
+        :param effector: (str) The effector targeted by the
+            keyframe. Overrides the default effector defined
+            for this motion sequence.
         :param frame: (int) The spatial frame. Overrides the
             default frame for this sequence.
         :param axis_mask: (int) The axis mask to use for this
@@ -461,16 +461,52 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
         return ctype == const.CTYPE_ABSOLUTE
 
     def _get_position_time(self, position, motion_proxy):
+        """
+        Gets the time needed to move to the specified position.
+
+        :param position: (List[float]) The position.
+        :param motion_proxy: (ALMotion) The motion proxy or service.
+        :return: The time needed to move to the specified position.
+        """
+        # for now, just return a constant; but, in general
+        # this could be more dynamic based on the current position
+        # of the robot (obtained from the motion_proxy) and the
+        # distance to the desired position
         return 3
 
     def _get_transform_time(self, transform, motion_proxy):
+        """
+        Gets the time needed to move to the specified transform.
+
+        :param transform: (List[float]) The transform.
+        :param motion_proxy: (ALMotion) The motion proxy or service.
+        :return: The time needed to move to the specified transform.
+        """
+        # for now, just return a constant; but, in general
+        # this could be more dynamic based on the current transforms
+        # for the robot (obtained from the motion_proxy) and the
+        # distance to the desired transforms
         return 3
 
     def _new_invocation(self, keyframe, motion_proxy):
+        """
+        Generates a new set of invocation arguments for the
+        ALMotion.positionInterpolations(...) methods based on the
+        provided initial keyframe.
+
+        :param keyframe: (models.KeyFrame) The initial keyframe for
+            the invocation.
+        :param motion_proxy: (ALMotion) The motion proxy or service.
+        :return: The set of invocation arguments.
+        """
         args = new_invocation_args()
         args[EFFECTORS].append(keyframe.effector)
         args[FRAMES].append(keyframe.frame)
         args[MASKS].append(const.AXIS_MASK_VEL)
+
+        # if the keyframe has a defined start, we need to make it the
+        # initial argument in the path list and determine a time to
+        # move to it
         if keyframe.start:
             args[PATHS].append([keyframe.start])
             if keyframe.kftype == const.KFTYPE_ABSOLUTE_POSITION:
@@ -488,6 +524,14 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
 
     @staticmethod
     def _append(invocation, current, previous):
+        """
+        Appends the current keyframe to the invocation arguments.
+
+        :param invocation: The invocation arguments.
+        :param current: (models.KeyFrame) The current keyframe to be appended.
+        :param previous: (models.KeyFrame) The previous keyframe.
+        """
+        # we can't mix position and transform keyframes
         if current.kftype != previous.kftype:
             raise KeyframeException.type_mismatch(current, previous)
 
@@ -520,34 +564,9 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             invocation[ARGS][MASKS].append(current.axis_mask)
             invocation[ARGS][TIMES].append([current.duration])
 
-    @staticmethod
-    def _are_same(p1, p2, thresholds=0.001):
-        len_p1 = len(p1)
-        if len_p1 != len(p2):
-            return False
-        if isinstance(thresholds, float):
-            thresholds = [thresholds] * len(p1)
-        elif isinstance(thresholds, (list, tuple)) and len(thresholds) == 2:
-            if len_p1 == 6:
-                thresholds = thresholds[0]
-            elif len_p1 == 12:
-                thresholds = thresholds[1]
-        else:
-            thresholds = [0] * len_p1
-
-        for i in range(len_p1):
-            try:
-                threshold = thresholds[i]
-            except IndexError:
-                threshold = 0
-
-            if p1[i] - p2[i] > threshold:
-                return False
-        return True
-
 
 if __name__ == '__main__':
-    seq = AbsoluteSequence('LArm', 2, 7)
+    seq = AbsoluteSequence(const.EF_LEFT_ARM, const.FRAME_ROBOT, const.AXIS_MASK_VEL)
     points = [
         [0.15457427501678467, 0.131572425365448, 0.5019456148147583,
             -1.5897225141525269, -0.935154914855957, 0.20292489230632782],
@@ -563,7 +582,8 @@ if __name__ == '__main__':
         seq.next_position_keyframe(p, 3)
 
     seq.next_position_keyframe(points[0], 3, with_previous=False)
-    seq.next_position_keyframe(points[1], 5, 'RArm', 1, 63)
+    seq.next_position_keyframe(points[1], 5, const.EF_RIGHT_ARM,
+                               const.FRAME_WORLD, const.AXIS_MASK_ALL)
 
     handler = AbsoluteSequenceHandler()
 
