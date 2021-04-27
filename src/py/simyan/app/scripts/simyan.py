@@ -69,7 +69,6 @@ class SIMActivityManager(object):
     def on_start(self):
         # self.say_info("Starting Simyan. Registering services.")
         self._start_services()
-        # self._active_services(log=True)
 
 	if not self.s.SIMMotorControl.repeat("Called motor control"):
 	    # class MyObj:
