@@ -22,44 +22,59 @@ class SIMServiceManager(object):
     """The manager for SIMYAN services."""
     APP_ID = "org.uccs.simyan.SIMServiceManager"
 
-    def __init__(self, qiapp):
+    def __init__(self, qiapp, dev=False):
+        """
+        Initializes a new SIMYAN service manager instance.
+
+        :param qiapp: (qi.Application) The hosting qi application.
+        """
         self.qiapp = qiapp
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
-        self.lifetime = qi.Promise()
+        self.dev = dev
         self.scoped_services = [
             ServiceScope(qiapp, SIMMotion),
             ServiceScope(qiapp, SIMSpeech),
             ServiceScope(qiapp, SIMVision)
         ]
 
+    @qi.bind(returnType=qi.Void, paramsType=[])
     def startServices(self):
-        self.logger.info('Starting SIMYAN service.')
+        """Starts and registers all SIMYAN services."""
+        self.logger.info('Starting SIMYAN services.')
         self._start_services()
 
+    @qi.bind(returnType=qi.Void, paramsType=[])
     def stopServices(self):
+        """Stops and unregisters all SIMYAN services."""
         self.logger.info('Stopping SIMYAN services.')
         self._stop_services()
 
+    @qi.nobind
     def on_start(self):
+        """Performs startup operations."""
         self.logger.info('Starting SIMServiceManager.')
-        # future = self.lifetime.future()
-        # future.wait()
+        if not self.dev:
+            self.logger.info('Call SIMServiceManager.startServices to start all SIMYAN services.')
+        else:
+            self.startServices()
 
-    def stop(self, *args):
-        """Standard way of stopping the application."""
-        self.lifetime.setValue(True)
+    @qi.nobind
+    def stop(self):
+        """Standard way of stopping the service."""
         self.logger.info("Stopping SIMServiceManager.")
         self.qiapp.stop()
 
+    @qi.nobind
     def on_stop(self):
-        """Cleanup the activity"""
+        """Cleanup after the the service."""
         self._stop_services()
         self.logger.info("Application finished: SIMServiceManager .")
         self.events.clear()
 
+    @qi.nobind
     def _start_services(self):
         """Register SIMYAN services."""
         for service in self.scoped_services:
@@ -69,6 +84,7 @@ class SIMServiceManager(object):
             if not service.is_started:
                 self.logger.info("Registration failed for service: {0}".format(service.name))
 
+    @qi.nobind
     def _stop_services(self):
         """Unregister SIMYAN services."""
         for service in self.scoped_services:
