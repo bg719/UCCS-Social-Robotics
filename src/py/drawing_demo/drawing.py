@@ -66,7 +66,8 @@ class SIMDrawingDemo(object):
                 motion.setStiffnesses(const.EF_LEFT_ARM, 1.0)
                 return True
 
-            context = AbsoluteSequenceContext(self.qiapp.session, self.APP_ID, initial_pose, extensive_validation=False)
+            context = AbsoluteSequenceContext(self.qiapp.session, self.APP_ID, initial_pose,
+                                              extensive_validation=False)
             context.register()
 
             triangle = shapes['triangle']['leftHand']

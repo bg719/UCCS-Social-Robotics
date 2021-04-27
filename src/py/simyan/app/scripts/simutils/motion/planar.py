@@ -11,22 +11,20 @@ from _sequence import *
 
 class PlanarSequence(MotionSequence):
 
-    def __init__(self, effectors, axis_mask=const.AXIS_MASK_VEL):
+    def __init__(self, effector, axis_mask=const.AXIS_MASK_VEL):
         """
         Initializes a new planar sequence instance.
 
-        :param effectors: (Union[str, Iterable[str])
-            The default effector(s) targeted by this sequence.
-            Either the string identifier for a single effector
-            or a list of effector identifiers.
+        :param effector: (str) The default effector targeted
+            by this sequence.
         :param axis_mask: (int) The default axis mask for
             this sequence.
         """
-        self.effectors = effectors
+        self.effector = effector
         self.axis_mask = axis_mask
         self._keyframes = []
 
-    def new_keyframe(self, start, end, duration, effectors=None, axis_mask=None):
+    def new_keyframe(self, start, end, duration, effector=None, axis_mask=None):
         """
         Adds a new keyframe between the provided starting and ending
         positions with the specified duration.
@@ -34,9 +32,9 @@ class PlanarSequence(MotionSequence):
         :param start: (Iterable[float]) The starting position.
         :param end: (Iterable[float]) The ending position.
         :param duration: (float) The duration of the frame.
-        :param effectors: (Union[List[str], str])
-            The effector(s) targeted by the keyframe. Overrides
-            the default effectors defined for this planar sequence.
+        :param effector: (str) The effector targeted by the
+            keyframe. Overrides the default effector defined
+            for this motion sequence.
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this planar sequence.
@@ -46,13 +44,13 @@ class PlanarSequence(MotionSequence):
         start = to_point(start, 2)
         end = to_point(end, 2)
 
-        if not effectors:
-            effectors = self.effectors
+        if not effector:
+            effector = self.effector
 
         if not axis_mask:
             axis_mask = self.axis_mask
 
-        keyframe = KeyFrame(start, end, duration, effectors, None,
+        keyframe = KeyFrame(start, end, duration, effector, None,
                             axis_mask, const.KFTYPE_PLANAR)
 
         if not keyframe.is_complete():
@@ -61,7 +59,7 @@ class PlanarSequence(MotionSequence):
         self._keyframes.append(keyframe)
         return True
 
-    def next_keyframe(self, end, duration, effectors=None, axis_mask=None):
+    def next_keyframe(self, end, duration, effector=None, axis_mask=None):
         """
         Adds a new keyframe to the sequence which uses the ending position
         of the previous keyframe as the starting position and moves to the
@@ -69,16 +67,16 @@ class PlanarSequence(MotionSequence):
 
         :param end: (Iterable[float]) The ending transform.
         :param duration: (float) The duration of the keyframe.
-        :param effectors: (Union[List[str], str])
-            The effector(s) targeted by the keyframe. Overrides
-            the default effectors for this sequence.
+        :param effector: (str) The effector targeted by the
+            keyframe. Overrides the default effector defined
+            for this motion sequence.
         :param axis_mask: (int) The axis mask to use for this
             keyframe. Overrides the default axis mask defined for
             this sequence.
         :return: True if the new keyframe was added successfully;
             otherwise False.
         """
-        return self.new_keyframe(None, end, duration, effectors, axis_mask)
+        return self.new_keyframe(None, end, duration, effector, axis_mask)
 
     def add_keyframe(self, keyframe):
         """
@@ -113,7 +111,7 @@ class PlanarSequence(MotionSequence):
             return False
         elif keyframe.kftype == const.KFTYPE_PLANAR:
             return False
-        elif keyframe.start and len(keyframe.start) != 2:
+        elif keyframe.start is not None and len(keyframe.start) != 2:
             return False
         elif len(keyframe.end) != 2:
             return False
@@ -442,6 +440,9 @@ class PlanarSequenceHandler(MotionSequenceHandler):
             The posture service or proxy.
         :return: (models.ExecutionResult) The result of executing the sequence.
         """
+
+        raise NotImplementedError()
+
         keyframes = sequence.get_keyframes()
 
         if not keyframes or len(keyframes) == 0:

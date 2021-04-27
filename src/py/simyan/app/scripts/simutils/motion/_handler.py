@@ -23,13 +23,55 @@ TIMES = 4
 
 def new_invocation_args():
     """
-    Returns a new, emtpy invocation argument list.
+    Returns a new, emtpy invocation argument set.
     
     :return: a 5-tuple of lists, corresponding with
         ([effectors_vector], [paths_vector], [frames_vector],
          [masks_vector], [times_vector])
     """
     return [], [], [], [], []
+
+
+def are_equal(p1, p2, thresholds=0.001):
+    """
+    Determines whether `p1` and `p2` are the equal within the
+    specified threshold(s).
+
+    :param p1: (List[float]) The first position/transform.
+    :param p2: (List[float]) The second position/transform.
+    :param thresholds: (Union[float, Iterable[float, Iterable[float]]])
+        The threshold(s) for testing positional/transformational
+        equality. Either a single value to be used for all
+        comparisons or a 2 element list of thresholds to be
+        applied to corresponding indices for positional and
+        transformational vectors, respectively.
+    :return:
+    """
+    len_p1 = len(p1)
+    if len_p1 != len(p2):
+        return False
+
+    # check/set thresholds value
+    if isinstance(thresholds, float):
+        thresholds = [thresholds] * len(p1)
+    elif isinstance(thresholds, (list, tuple)) and len(thresholds) == 2:
+        if len_p1 == 6:
+            thresholds = thresholds[0]
+        elif len_p1 == 12:
+            thresholds = thresholds[1]
+    else:
+        thresholds = [0] * len_p1
+
+    # check equality of p1 and p2
+    for i in range(len_p1):
+        try:
+            threshold = thresholds[i]
+        except IndexError:
+            threshold = 0
+
+        if p1[i] - p2[i] > threshold:
+            return False
+    return True
 
 
 class KeyframeException(Exception):
