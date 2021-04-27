@@ -128,10 +128,16 @@ class QiChatBuilder:
         return self.script
 
 
+class SpeechEventException(Exception):
+
+    def __init__(self, message):
+        self.message = message
+
+
 class SpeechEvent:
     """A speech event which invokes a callback when a particular word is recognized."""
 
-    def __init__(self, words, callback, repeated=True):
+    def __init__(self, words, callback, repeat=False):
         """
         Initializes a new speech event.
 
@@ -140,14 +146,17 @@ class SpeechEvent:
             two arguments. The first argument will always be the word that
             was recognized. If the function accepts a second argument, the
             confidence value will be passed as the second parameter.
+        :param repeat: (bool) If True, this speech event will re-register
+            and the callback be re-invoked after each time it is raised;
+            otherwise, it will be unsubscribed after the first occurrence.
         """
         if not callable(callback):
             raise ValueError('Callback must be a callable function.')
 
         self.callback = callback
         self.words = list(words)
-        self.is_subscribed = False
-        self.repeated = repeated
+        self._is_subscribed = False
+        self.repeat = repeat
 
         self._arg_count = len(getargspec(callback).args)
         self._is_method = ismethod(callback)
@@ -165,6 +174,10 @@ class SpeechEvent:
         self._future = None
         self._speech_service = None
 
+    def is_subscribed(self):
+        """Gets a value indicating whether this speech event is subscribed."""
+        return self._is_subscribed
+
     def register(self, speech_service):
         """
         Registers this speech event to the provided speech service.
@@ -174,14 +187,7 @@ class SpeechEvent:
         """
         if speech_service:
             self._speech_service = speech_service
-            self._subscription = speech_service.subscribe(self.words)
-
-            if self._subscription.id == -1:
-                return False
-
-            self._subscription.future.addCallback(self._call)
-            self.is_subscribed = True
-            return True
+            return self._register()
         else:
             return False
 
@@ -192,16 +198,18 @@ class SpeechEvent:
         :return: True if the event was unregistered successfully;
             otherwise, False.
         """
-        if self.is_subscribed:
-            self.is_subscribed = False
-            return self._speech_service.unsubscribe(self._subscription.id)
+        if self._is_subscribed:
+            self._is_subscribed = False
+            self._future.cancel()
+            return True
         else:
             return False
 
     def _call(self, future):
         """
         Calls the registered callback with the value set for the
-        future.
+        future and attempts to re-register this event if it is
+        repeatable.
 
         :param future: (qi.Future) The speech event future.
         """
@@ -211,29 +219,17 @@ class SpeechEvent:
             else:
                 self.callback(*future.value())
 
-            self._subscription.reactivate(self.repeated).wait()
-            self._subscription.future.addCallback(self._call)
+        if self.repeat and not self._register():
+            raise SpeechEventException('Failed to re-register speech event.')
 
+    def _register(self):
+        self._future = self._speech_service.subscribe(self.words)
 
-class _SpeechSubscription:
+        if self._future.hasError():
+            self._is_subscribed = False
+            return False
 
-    def __init__(self, id):
-        self.id = id
-        self.future = None
-        self._reactivate = None
-
-    def reactivate(self, choice=True):
-        promise = qi.Promise()
-        self._reactivate.setValue((self.id, choice, promise))
-        return promise.future()
-
-    def reset(self, future):
-        if not id == -1:
-            self.future = future
-            self._reactivate = qi.Promise()
-            return self._reactivate.future()
-
-    @staticmethod
-    def error():
-        return _SpeechSubscription(-1)
+        self._future.addCallback(self._call)
+        self._is_subscribed = True
+        return True
 

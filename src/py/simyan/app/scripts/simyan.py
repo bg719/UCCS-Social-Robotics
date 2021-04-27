@@ -75,7 +75,6 @@ class SIMActivityManager(object):
             print(word)
 
         se = SpeechEvent(['red', 'yellow', 'blue', 'green'], self.i_heard)
-        # se2 = SpeechEvent(['yes'], other_i_heard)
         se.register(self.s.SIMSpeech)
         self.say_info("Listening")
 

@@ -7,9 +7,6 @@ import stk.events
 import stk.services
 import stk.logging
 import threading
-import time
-
-from simutils.speech import _SpeechSubscription
 
 
 class SIMSpeech(object):
@@ -25,71 +22,29 @@ class SIMSpeech(object):
         self.asr = self.s.ALSpeechRecognition
         self.memory = self.s.ALMemory
         self.cid = None
-        self.id_count = 0
         self.language = language
         self.vocab = {}
-        self.subscribers = {}
         self.lock = threading.Lock()
         self.pending_removal = []
-        self.need_reset = []
 
-    @qi.bind(returnType=qi.Object, paramsType=[qi.List(qi.String)])
+    @qi.bind(returnType=qi.Future, paramsType=[qi.List(qi.String)])
     def subscribe(self, words):
         if len(words) == 0:
-            return _SpeechSubscription.error()
+            return _SubscriptionInfo.error()
 
-        id = self.id_count
-        self.id_count += 1
-        info = SubscriptionInfo(id, words)
-        info.reactivate.addCallback(self.reactivate)
+        info = _SubscriptionInfo(words)
 
+        self.lock.acquire()
         for word in words:
             if word in self.vocab:
                 self.vocab[word].append(info)
             else:
                 self.vocab[word] = [info]
 
-        self.subscribers[id] = info
         self._update_vocabulary()
-        return info.subscription
-
-    @qi.bind(returnType=qi.Bool, paramsType=[qi.Int8])
-    def unsubscribe(self, id):
-        if id not in self.subscribers:
-            return False
-        # info = self.subscribers.pop(id)
-        # for word in info.words:
-        #     entry = self.vocab[word]
-        #     entry.remove(info)
-        #     if len(entry) == 0:
-        #         self.vocab.pop(word)
-        # self._update_vocabulary()
-        self._unsubscribe([id])
-        return True
-
-    @qi.nobind
-    def reactivate(self, future):
-        self.lock.acquire()
-        if future.hasValue():
-            id, choice, promise = future.value()
-            info = self.subscribers[id]
-            last = info == self.pending_removal[-1]
-
-            if choice:
-                self.pending_removal.remove(info)
-                self.need_reset.append((info, promise))
-                # info.reset()
-                # promise.setValue(True)
-
-            if last:
-                print('unsubscribing')
-                print(self.pending_removal)
-                self._unsubscribe((s.id for s in self.pending_removal))
-
-                for i, p in self.need_reset:
-                    i.reset()
-                    p.setValue(True)
         self.lock.release()
+
+        return info.promise.future()
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
@@ -100,22 +55,32 @@ class SIMSpeech(object):
     @qi.nobind
     def on_stop(self):
         """Cleanup (add yours if needed)"""
+        for subscriber in set().union(self.vocab.values()):
+            subscriber.promise.setCanceled()
+
         self._unregister()
         self.logger.info("SIMSpeech finished.")
 
+    @qi.nobind  # todo: verify this still works
     def on_word_recognized(self, eventargs):
-        self.lock.acquire()
         self.logger.info(eventargs)
-
-        self.asr.pause(True)
-
         word = eventargs[0][6:-6]
         confidence = eventargs[1]
 
-        if word in self.vocab:
-            for subscriber in self.vocab[word]:
-                self.pending_removal.append(subscriber)
+        self.lock.acquire()
+        self.asr.pause(True)
+
+        if word not in self.vocab:  # check might not be needed
+            self.asr.pause(False)
+            self.lock.release()
+            return
+
+        for subscriber in self.vocab[word]:
+            self.pending_removal.append(subscriber)
+            if not subscriber.is_canceled():
                 subscriber.set_value(word, confidence)
+
+        self._unsubscribe(self.pending_removal, pause=False)
 
         self.asr.pause(False)
         self.lock.release()
@@ -135,13 +100,12 @@ class SIMSpeech(object):
             self.cid = None
 
     @qi.nobind
-    def _unsubscribe(self, ids, pause=True):
-        for id in ids:
-            info = self.subscribers.pop(id)
+    def _unsubscribe(self, subscribers, pause=True):
+        for info in subscribers:
             for word in info.words:
-                entry = self.vocab[word]
-                entry.remove(info)
-                if len(entry) == 0:
+                subscribed = self.vocab[word]
+                subscribed.remove(info)
+                if len(subscribed) == 0:
                     self.vocab.pop(word)
         self._update_vocabulary(pause)
 
@@ -161,25 +125,30 @@ class SIMSpeech(object):
             self._unregister()
 
 
-class SubscriptionInfo:
+class _SubscriptionInfo:
 
-    def __init__(self, id, words):
-        self.id = id
+    def __init__(self, words):
         self.promise = qi.Promise()
         self.words = words
-        self.subscription = _SpeechSubscription(id)
-        self.reactivate = self.subscription.reset(self.promise.future())
         self.value_set = False
 
-    def reset(self):
-        self.promise = qi.Promise()
-        self.reactivate = self.subscription.reset(self.promise.future())
-        self.value_set = False
+    def is_canceled(self):
+        if self.promise.isCancelRequested():
+            self.promise.setCanceled()
+            return True
+        return False
 
     def set_value(self, word, confidence):
         if not self.value_set:
             self.promise.setValue((word, confidence))
             self.value_set = True
+
+    @staticmethod
+    def error():
+        instance = _SubscriptionInfo(())
+        instance.promise.setError('Word list cannot be empty.')
+        return instance.promise.future()
+
 
 
 ####################
