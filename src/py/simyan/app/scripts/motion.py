@@ -114,7 +114,7 @@ class SIMMotion(object):
         try:
             self.lock.acquire()
             self.logger.info('Executing motion sequence for context: {0}'.format(context_name))
-            result = handler.handle_sequence(context, sequence, self.s.ALMotion, self.s.ALRobotPosture)
+            result = handler.handle_sequence(sequence, context, self.s.ALMotion, self.s.ALRobotPosture)
             self.logger.info('Execution result: {0} - Message: {1}'.format(result.success, result.message))
         except Exception as e:
             self.logger.info('Exception while executing sequence for context {0}. Message: {1}'.format(
@@ -146,7 +146,7 @@ class SIMMotion(object):
         :return: True if the context can be created; otherwise, False.
         """
         return (not self.hasContext(context.get_name())) and \
-               self.supportsContextType(context.get_ctype())
+            self.supportsContextType(context.get_ctype())
 
     @qi.nobind
     def _get_context_reg(self, name):

@@ -8,7 +8,10 @@ import stk.runner
 import stk.events
 import stk.services
 import stk.logging
+
 from simutils.motion.absolute import *
+from simutils.service import ServiceScope
+from simyan import SIMServiceManager
 
 
 def set_breathing(enabled, motion_proxy):
@@ -34,11 +37,17 @@ class SIMDrawingDemo(object):
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
+        self.ssm_scope = ServiceScope(qiapp, SIMServiceManager)
+        self.ssm_scope.create_scope()
+        self.ssm = self.s.SIMServiceManager
+
         self.spec_loaders = []
         self.drawing_specs = {}
 
     def on_start(self):
         try:
+            self.ssm.startServices()
+
             with open('shapes.json', 'r') as outfile:
                 data = outfile.read()
             shapes = json.loads(data)
@@ -48,7 +57,7 @@ class SIMDrawingDemo(object):
 
             def initial_pose():
                 # initial position
-		print('waking')
+                print('waking')
                 motion.wakeUp()
                 motion.setStiffnesses("Body", 1.0)
                 motion.setStiffnesses("LArm", 0.0)
@@ -59,47 +68,48 @@ class SIMDrawingDemo(object):
                 motion.setStiffnesses("Head", 0.0)
 
                 # set breathing
-		print('turning off breathing')
+                print('turning off breathing')
                 set_breathing(False, motion)
                 time.sleep(2)
 
                 # move the left arm
-		print('enabling effector')
+                print('enabling effector')
                 motion.wbEnableEffectorControl(const.EF_LEFT_ARM, True)
                 motion.setStiffnesses(const.EF_LEFT_ARM, 1.0)
                 return True
-	    self.logger.info('Creating absolute motion sequence context')
-            context = AbsoluteSequenceContext(
-		self.qiapp.session, self.APP_ID, initial_pose, 
-		self.s.SIMMotorControl, extensive_validation=False)
-	    self.logger.info('Registering sequence context')
-            success = context.register(self.s.SIMMotorControl)
-	    self.logger.info('Registered: {0}'.format(success))
 
-	    self.logger.info('Creating sequence')
+            self.logger.info('Creating absolute motion sequence context')
+            context = AbsoluteSequenceContext(self.APP_ID, initial_pose, extensive_validation=False)
+            self.logger.info('Registering sequence context')
+            success = context.register(self.s.SIMMotion)
+            self.logger.info('Registered: {0}'.format(success))
+
+            self.logger.info('Creating sequence')
             triangle = shapes['triangle']['leftHand']
             seq = AbsoluteSequence(
-                triangle['effectors'],
+                triangle['effector'],
                 triangle['frame'],
                 triangle['axisMask']
             )
             duration = triangle['duration']
 
             for kf in triangle['keyframes']:
-                seq.next_position_keyframe(kf['point'], duration)
-	    
-	    self.logger.info('Executing sequence')
-            context.execute_sequence(seq, self.s.SIMMotorControl)
-	except Exception as e:
-	    self.logger.info(e.message)
+                added = seq.next_position_keyframe(kf['point'], duration)
+                print('Added: {0} - {1}'.format(added, kf))
+
+            self.logger.info('Executing sequence')
+            self.logger.info(self.s.SIMMotion)
+            context.execute_sequence(seq, self.s.SIMMotion)
+        except Exception as e:
+            self.logger.info(e.message)
         finally:
             self.stop()
-
-
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
         """Stop the service."""
+        self.ssm.stopServices()
+        self.ssm_scope.close_scope()
         self.logger.info("SIMDrawingDemo stopped by request.")
         self.qiapp.stop()
 

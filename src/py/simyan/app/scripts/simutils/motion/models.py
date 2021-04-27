@@ -61,7 +61,7 @@ class KeyFrame:
             return False
         elif not self.duration or self.duration < 0:
             return False
-        elif self.effector not in const.EFFECTORS:
+        elif self.effector is None:
             return False
         elif not self.kftype:
             return False

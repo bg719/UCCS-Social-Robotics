@@ -28,13 +28,15 @@ class ServiceScope:
         if hasattr(self.instance, "on_start"):
             def handle_on_start_done(on_start_future):
                 try:
-                    self.err_msg = "Error in on_start(), stopping service: %s" \
-                                   % on_start_future.error()
-                    if hasattr(self.instance, "logger"):
-                        self.instance.logger.error(self.err_msg)
-                    else:
-                        print self.err_msg
-                except:
+                    if on_start_future.hasError():
+                        self.err_msg = "Error in on_start(), stopping service: %s" \
+                                       % on_start_future.error()
+                        if hasattr(self.instance, "logger"):
+                            self.instance.logger.error(self.err_msg)
+                        else:
+                            print self.err_msg
+                except Exception as e:
+                    print(e)
                     self.close_scope()
 
             qi.async(self.instance.on_start).addCallback(handle_on_start_done)

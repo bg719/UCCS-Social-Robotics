@@ -107,7 +107,7 @@ class MotionSequenceHandler:
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def handle_sequence(self, context, sequence, motion_proxy, posture_proxy):
+    def handle_sequence(self, sequence, context, motion_proxy, posture_proxy):
         """
         Handles the execution of the specified motion `sequence` within the
         scope of the provided motion sequence `context`.
@@ -119,10 +119,10 @@ class MotionSequenceHandler:
         on whether the attributes and methods they expose on this side are
         sufficient for the handler to execute.
 
-        :param context: (contexts.MotionSequenceContext)
-            The motion sequence context.
         :param sequence: (models.MotionSequence)
             The motion sequence.
+        :param context: (contexts.MotionSequenceContext)
+            The motion sequence context.
         :param motion_proxy: (ALMotion)
             The motion service or proxy.
         :param posture_proxy: (ALRobotPosture)
