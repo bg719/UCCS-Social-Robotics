@@ -74,9 +74,13 @@ class SIMActivityManager(object):
         def other_i_heard(word):
             print(word)
 
-        se = SpeechEvent(['red', 'yellow', 'blue', 'green'], self.i_heard)
-        se.register(self.s.SIMSpeech)
-        self.say_info("Listening")
+        speech = self.s.SIMSpeech
+        se = SpeechEvent(['red', 'yellow', 'green'], self.i_heard)
+        se2 = SpeechEvent(['yes and no'], other_i_heard)
+
+        # self.say_info("Listening")
+        se.register(speech)
+        se2.register(speech)
 
         self.events.connect("FrontTactilTouched", self.stop)
         # self.stop()

@@ -13,7 +13,7 @@ class SIMSpeech(object):
     """A SIMYAN NAOqi service providing supplemental speech services."""
     APP_ID = "org.uccs.simyan.SIMSpeech"
 
-    def __init__(self, qiapp, language='English'):
+    def __init__(self, qiapp):
         self.qiapp = qiapp
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
@@ -22,29 +22,27 @@ class SIMSpeech(object):
         self.asr = self.s.ALSpeechRecognition
         self.memory = self.s.ALMemory
         self.cid = None
-        self.language = language
+        self.language = 'English'
         self.vocab = {}
         self.lock = threading.Lock()
-        self.pending_removal = []
 
-    @qi.bind(returnType=qi.Future, paramsType=[qi.List(qi.String)])
-    def subscribe(self, words):
-        if len(words) == 0:
+    @qi.bind(returnType=qi.Object, paramsType=[qi.List(qi.String), qi.Float])
+    def subscribe(self, phrases, minimum_confidence):
+        if len(phrases) == 0 or not (0 < minimum_confidence <= 1):
             return _SubscriptionInfo.error()
 
-        info = _SubscriptionInfo(words)
+        info = _SubscriptionInfo(phrases, minimum_confidence)
 
         self.lock.acquire()
-        for word in words:
-            if word in self.vocab:
-                self.vocab[word].append(info)
+        for phrase in phrases:
+            if phrase in self.vocab:
+                self.vocab[phrase].append(info)
             else:
-                self.vocab[word] = [info]
+                self.vocab[phrase] = [info]
 
         self._update_vocabulary()
         self.lock.release()
-
-        return info.promise.future()
+        return info.future()
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
@@ -61,26 +59,27 @@ class SIMSpeech(object):
         self._unregister()
         self.logger.info("SIMSpeech finished.")
 
-    @qi.nobind  # todo: verify this still works
+    @qi.nobind
     def on_word_recognized(self, eventargs):
-        self.logger.info(eventargs)
-        word = eventargs[0][6:-6]
+        # self.logger.info(eventargs)
+        phrase = eventargs[0]  # if word spotting is set True, need eventargs[0][6:-6]
         confidence = eventargs[1]
 
         self.lock.acquire()
         self.asr.pause(True)
 
-        if word not in self.vocab:  # check might not be needed
+        if phrase not in self.vocab:
             self.asr.pause(False)
             self.lock.release()
             return
 
-        for subscriber in self.vocab[word]:
-            self.pending_removal.append(subscriber)
-            if not subscriber.is_canceled():
-                subscriber.set_value(word, confidence)
+        pending_removal = []
+        for subscriber in self.vocab[phrase]:
+            if not subscriber.is_canceled() \
+                    and subscriber.set_value(phrase, confidence):
+                pending_removal.append(subscriber)
 
-        self._unsubscribe(self.pending_removal, pause=False)
+        self._unsubscribe(pending_removal, pause=False)
 
         self.asr.pause(False)
         self.lock.release()
@@ -92,21 +91,27 @@ class SIMSpeech(object):
         self.asr.pause(True)
         self.asr.setLanguage(self.language)
         self.asr.pause(False)
+        self.asr.subscribe(self.APP_ID)
 
     @qi.nobind
     def _unregister(self):
         if self.cid is not None:
-            self.events.disconnect("WordRecognized", self.cid)
+            self.events.clear()
             self.cid = None
+            self.asr.unsubscribe(self.APP_ID)
 
     @qi.nobind
     def _unsubscribe(self, subscribers, pause=True):
+        if len(subscribers) == 0:
+            return
+
         for info in subscribers:
-            for word in info.words:
-                subscribed = self.vocab[word]
-                subscribed.remove(info)
-                if len(subscribed) == 0:
-                    self.vocab.pop(word)
+            for phrase in info.phrases:
+                if phrase in self.vocab:
+                    subscribed = self.vocab[phrase]
+                    subscribed.remove(info)
+                    if len(subscribed) == 0:
+                        self.vocab.pop(phrase)
         self._update_vocabulary(pause)
 
     @qi.nobind
@@ -117,20 +122,22 @@ class SIMSpeech(object):
             if pause:
                 self.asr.pause(True)
 
-            self.asr.setVocabulary(self.vocab.keys(), True)
+            self.asr.setVocabulary(self.vocab.keys(), False)
 
             if pause:
                 self.asr.pause(False)
-        else:
-            self._unregister()
 
 
 class _SubscriptionInfo:
 
-    def __init__(self, words):
+    def __init__(self, phrases, minimum_confidence):
         self.promise = qi.Promise()
-        self.words = words
+        self.phrases = phrases
+        self.minimum_confidence = minimum_confidence
         self.value_set = False
+
+    def future(self):
+        return _SubscriptionFuture(self.promise.future())
 
     def is_canceled(self):
         if self.promise.isCancelRequested():
@@ -138,10 +145,13 @@ class _SubscriptionInfo:
             return True
         return False
 
-    def set_value(self, word, confidence):
-        if not self.value_set:
-            self.promise.setValue((word, confidence))
+    def set_value(self, phrase, confidence):
+        if not self.value_set and confidence >= self.minimum_confidence:
+            self.promise.setValue((phrase, confidence))
             self.value_set = True
+            return True
+        else:
+            return False
 
     @staticmethod
     def error():
@@ -149,6 +159,11 @@ class _SubscriptionInfo:
         instance.promise.setError('Word list cannot be empty.')
         return instance.promise.future()
 
+
+class _SubscriptionFuture:
+
+    def __init__(self, future):
+        self.future = future
 
 
 ####################

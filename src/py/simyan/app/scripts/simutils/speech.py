@@ -1,7 +1,6 @@
 __version__ = "0.0.0"
 __author__ = 'anguyen7-99, ancient-sentinel'
 
-import qi
 from enum import Enum
 from inspect import getargspec, ismethod
 
@@ -137,15 +136,18 @@ class SpeechEventException(Exception):
 class SpeechEvent:
     """A speech event which invokes a callback when a particular word is recognized."""
 
-    def __init__(self, words, callback, repeat=False):
+    def __init__(self, phrases, callback, minimum_confidence=0.55, repeat=False):
         """
         Initializes a new speech event.
 
-        :param words: ([Iterable[str]]) The list of words to be recognized.
+        :param phrases: ([Iterable[str]]) The list of phrases to be recognized.
         :param callback: (Callable) A callback function which takes one or
-            two arguments. The first argument will always be the word that
+            two arguments. The first argument will always be the phrase that
             was recognized. If the function accepts a second argument, the
             confidence value will be passed as the second parameter.
+        :param minimum_confidence: (float) The minimum confidence that a
+            recognized phrase matches one defined for this event. Must be
+            a value between 0 and 1, inclusive.
         :param repeat: (bool) If True, this speech event will re-register
             and the callback be re-invoked after each time it is raised;
             otherwise, it will be unsubscribed after the first occurrence.
@@ -153,15 +155,18 @@ class SpeechEvent:
         if not callable(callback):
             raise ValueError('Callback must be a callable function.')
 
+        if not (0 < minimum_confidence <= 1):
+            raise ValueError('Minimum confidence must be a value between 0 and 1.')
+
         self.callback = callback
-        self.words = list(words)
-        self._is_subscribed = False
+        self.phrases = list(phrases)
+        self.minimum_confidence = minimum_confidence
         self.repeat = repeat
 
         self._arg_count = len(getargspec(callback).args)
         self._is_method = ismethod(callback)
 
-        if self._is_method:
+        if not self._is_method:
             allowed_count = (1, 2)
         else:
             allowed_count = (2, 3)
@@ -171,6 +176,7 @@ class SpeechEvent:
 
         self._subscription = None
         self._id = None
+        self._is_subscribed = False
         self._future = None
         self._speech_service = None
 
@@ -218,18 +224,17 @@ class SpeechEvent:
                 self.callback(future.value()[0])
             else:
                 self.callback(*future.value())
+        elif future.hasError():
+            self._is_subscribed = False
 
         if self.repeat and not self._register():
             raise SpeechEventException('Failed to re-register speech event.')
 
     def _register(self):
-        self._future = self._speech_service.subscribe(self.words)
+        self._future = self._speech_service.subscribe(
+            self.phrases, self.minimum_confidence).future
 
-        if self._future.hasError():
-            self._is_subscribed = False
-            return False
-
-        self._future.addCallback(self._call)
         self._is_subscribed = True
-        return True
+        self._future.addCallback(self._call)
+        return self._is_subscribed
 
