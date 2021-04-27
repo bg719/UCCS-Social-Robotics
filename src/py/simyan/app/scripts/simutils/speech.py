@@ -127,12 +127,6 @@ class QiChatBuilder:
         return self.script
 
 
-class SpeechEventException(Exception):
-
-    def __init__(self, message):
-        self.message = message
-
-
 class SpeechEvent:
     """A speech event which invokes a callback when a particular word is recognized."""
 
@@ -237,4 +231,17 @@ class SpeechEvent:
         self._is_subscribed = True
         self._future.addCallback(self._call)
         return self._is_subscribed
+
+
+class SpeechEventException(Exception):
+    """An exception raised due to a speech event error."""
+
+    def __init__(self, message):
+        """
+        Initializes a new speech event exception with the provided
+        message.
+
+        :param message: (str) The error message.
+        """
+        self.message = message
 
