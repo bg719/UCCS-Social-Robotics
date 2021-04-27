@@ -20,97 +20,71 @@ from simutils.motion.absolute import *
 
 
 # noinspection SpellCheckingInspection
-class SIMActivityManager(object):
-    """The activity responsible for management of SIMYAN services and activities."""
-    APP_ID = "org.uccs.simyan.SIMActivityManager"
+class SIMServiceManager(object):
+    """The manager for SIMYAN services."""
+    APP_ID = "org.uccs.simyan.SIMServiceManager"
 
     def __init__(self, qiapp):
         self.qiapp = qiapp
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
+
         self.scoped_services = [
-            # ServiceScope(qiapp, SIMMotion),
+            ServiceScope(qiapp, SIMMotion),
             ServiceScope(qiapp, SIMSpeech),
-            # ServiceScope(qiapp, SIMVision)
+            ServiceScope(qiapp, SIMVision)
         ]
-        self.activity = None
-        # Set this to None to stop speaking SIMYAN info
-        self.say_info = self.s.ALTextToSpeech.say
 
-    def _start_services(self):
-        """Register SIMYAN services."""
-        for service in self.scoped_services:
-            if self.say_info:
-                self.say_info("Registering " + str(service.name))
-            service.create_scope()
-            if not service.is_started and self.say_info:
-                self.say_info("Registration failed.")
-
-    def _stop_services(self):
-        """Unregister SIMYAN services."""
-        for service in self.scoped_services:
-            if self.say_info:
-                self.say_info("Stopping " + str(service.name))
-            if service.is_started:
-                service.close_scope()
-
-    def _active_services(self, log=False):
-        names = []
-        self.logger.info("Querying active Simyan services...")
-        for service in self.scoped_services:
-            if service.is_started:
-                names.append(service.name)
-                info = service.name + " is registered."
-                self.logger.info(info)
-                if self.say_info:
-                    self.say_info(info)
-        return names
-
-    def on_start(self):
-        # self.say_info("Starting Simyan. Registering services.")
+    def startServices(self):
+        self.logger.info('Starting SIMYAN service.')
         self._start_services()
 
-        def other_i_heard(word):
-            print(word)
+    def stopServices(self):
+        self.logger.info('Stopping SIMYAN services.')
 
-        speech = self.s.SIMSpeech
-        se = SpeechEvent(['red', 'yellow', 'green'], self.i_heard)
-        se2 = SpeechEvent(['yes and no'], other_i_heard)
+    def on_start(self):
+        self.logger.info('Starting SIMServiceManager.')
+        self._start_services()
 
-        # self.say_info("Listening")
-        se.register(speech)
-        se2.register(speech)
-
-        self.events.connect("FrontTactilTouched", self.stop)
-        # self.stop()
-
-    def i_heard(self, word):
-        self.say_info("I heard {0}".format(word))
+    # def _active_services(self, log=False):
+    #     names = []
+    #     self.logger.info("Querying active Simyan services...")
+    #     for service in self.scoped_services:
+    #         if service.is_started:
+    #             names.append(service.name)
+    #             info = service.name + " is registered."
+    #             self.logger.info(info)
+    #             if self.say_info:
+    #                 self.say_info(info)
+    #     return names
 
     def stop(self, *args):
         """Standard way of stopping the application."""
-        self.logger.info("Stopping Simyan activity.")
+        self.logger.info("Stopping SIMServiceManager.")
         self.qiapp.stop()
 
     def on_stop(self):
         """Cleanup the activity"""
         self._stop_services()
-        self.logger.info("Application finished: Simyan.")
+        self.logger.info("Application finished: SIMServiceManager .")
         self.events.clear()
 
+    def _start_services(self):
+        """Register SIMYAN services."""
+        for service in self.scoped_services:
+            self.logger.info("Registering service: {0}".format(service.name))
+            service.create_scope()
+            if not service.is_started:
+                self.logger.info("Registration failed for service: {0}".format(service.name))
 
-class SIMActivityContext:
-    """The context for an executing SIMYAN activity."""
-    APP_ID = "org.uccs.simyan.SIMActivityContext"
-
-    def __init__(self, qiapp):
-        self.qiapp = qiapp
-        self.events = stk.events.EventHelper(qiapp.session)
-        self.s = stk.services.ServiceCache(qiapp.session)
-        self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
-        self.scoped_services = []
+    def _stop_services(self):
+        """Unregister SIMYAN services."""
+        for service in self.scoped_services:
+            self.logger.info("Stopping service: {0}".format(service.name))
+            if service.is_started:
+                service.close_scope()
 
 
 if __name__ == "__main__":
-    stk.runner.run_service(SIMActivityManager)
+    stk.runner.run_service(SIMServiceManager)
