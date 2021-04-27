@@ -7,6 +7,7 @@ import stk.runner
 import stk.events
 import stk.services
 import stk.logging
+import threading
 
 from simutils.motion.absolute import *
 
@@ -34,6 +35,7 @@ class SIMMotion(object):
             AbsoluteSequenceHandler(),
             # PlanarSequenceHandler()
         ]
+        self.lock = threading.Lock()
 
     @qi.bind(returnType=qi.Bool, paramsType=[qi.Object])
     def registerContext(self, context):
@@ -110,15 +112,19 @@ class SIMMotion(object):
         # execute the sequence using the handler and context
         result = None
         try:
-	    self.logger.info('Executing motion sequence for context: {0}'.format(context_name))
+            self.lock.acquire()
+            self.logger.info('Executing motion sequence for context: {0}'.format(context_name))
             result = handler.handle_sequence(context, sequence, self.s.ALMotion, self.s.ALRobotPosture)
-	    self.logger.info('Execution result: {0} - {1}'.format(result.success, result.message))
+            self.logger.info('Execution result: {0} - Message: {1}'.format(result.success, result.message))
         except Exception as e:
-	    self.logger.info('Exception while executing sequence for context {0}. Message: {1}'.format(context_name, e.message))
+            self.logger.info('Exception while executing sequence for context {0}. Message: {1}'.format(
+                context_name, e.message))
             result = ExecutionResult.error_result(
                 "An unhandled error occurred while attempting to execute"
                 + "a motion sequence for context: {0}".format(context_name)
                 + "\nMessage: {0}".format(e.message))
+        finally:
+            self.lock.release()
         return result
 
     @qi.bind(returnType=qi.Void, paramsType=[])
@@ -166,8 +172,8 @@ class SIMMotion(object):
         """
         for handler in self.handlers:
             if handler.handles_type(context.get_ctype()):
-		name = context.get_name()
-		self.logger.info('Registering motion context: {0}'.format(name))
+                name = context.get_name()
+                self.logger.info('Registering motion context: {0}'.format(name))
                 self.contexts[name] = (context, handler)
                 return True
         return False
