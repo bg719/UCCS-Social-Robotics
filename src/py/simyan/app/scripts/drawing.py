@@ -38,7 +38,7 @@ class SIMDrawingDemo(object):
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
         self.ssm_scope = ServiceScope(qiapp, SIMServiceManager)
-        self.ssm_scope.create_scope(dev=True)
+        self.ssm_scope.create_scope()
         self.ssm = self.s.SIMServiceManager
 
         self.spec_loaders = []
@@ -46,7 +46,7 @@ class SIMDrawingDemo(object):
 
     def on_start(self):
         try:
-            # self.ssm.startServices()
+            self.ssm.startServices()
 
             with open('shapes.json', 'r') as outfile:
                 data = outfile.read()
