@@ -42,7 +42,7 @@ class SIMMotion(object):
         """
         Registers the motion sequence context.
 
-        :param context: (simutils.motion.contexts.MotionSequenceContext)
+        :param context: (simutils.motion._context.MotionSequenceContext)
             The motion sequence context.
         :return: True if the context was registered successfully;
             otherwise, False.
@@ -54,10 +54,10 @@ class SIMMotion(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def hasContext(self, name):
         """
-        Checks whether a context with the specified get_name is
+        Checks whether a context with the specified name is
         registered.
 
-        :param name: (str) The context get_name.
+        :param name: (str) The context name.
         :return: True if the context is registered;
             otherwise, False.
         """
@@ -66,10 +66,10 @@ class SIMMotion(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def removeContext(self, name):
         """
-        Removes the context with the specified get_name if it is
+        Removes the context with the specified name if it is
         registered.
 
-        :param name: (str) The context get_name.
+        :param name: (str) The context name.
         :return: True if the context was registered and has
             been removed; otherwise, False.
         """
@@ -79,10 +79,10 @@ class SIMMotion(object):
     @qi.bind(returnType=qi.Bool, paramsType=[qi.String])
     def supportsContextType(self, type):
         """
-        Determines whether the context get_ctype is supported.
+        Determines whether the context ctype is supported.
 
-        :param type: (str) The context get_ctype.
-        :return: True if the get_ctype is supported, otherwise False
+        :param type: (str) The context ctype.
+        :return: True if the ctype is supported, otherwise False
         """
         return any(handler.handles_type(type) for handler in self.handlers)
 
@@ -91,8 +91,8 @@ class SIMMotion(object):
         """
         Executes the motion sequence within the specified motion context.
 
-        :param context_name: (str) The context get_name.
-        :param sequence: (simutils.motion.models.MotionSequence)
+        :param context_name: (str) The context name.
+        :param sequence: (simutils.motion._sequences.MotionSequence)
             The motion sequence.
         :return: (simutils.motion.models.ExecutionResult)
             The result of the sequence execution.
@@ -154,7 +154,7 @@ class SIMMotion(object):
         Attempts to get the registration for the context with the
         specified get_name.
 
-        :param name: (str) The context get_name.
+        :param name: (str) The context name.
         :return: The context registration or None if no context
             was found.
         """
@@ -165,7 +165,7 @@ class SIMMotion(object):
         """
         Registers the motion sequence context.
 
-        :param context: (simutils.motion.contexts.MotionSequenceContext)
+        :param context: (simutils.motion._context.MotionSequenceContext)
             The motion sequence context.
         :return: True if the context was registered successfully;
             otherwise, False.

@@ -12,6 +12,7 @@ Predefined Postures:
 """
 
 __version__ = "0.0.0"
+__author__ = 'ancient-sentinel'
 
 # FRAMES
 FRAME_TORSO = 0
@@ -190,20 +191,38 @@ HAND_OFFSET_Z = 0.01231
 
 # CONTEXT TYPES
 CTYPE_ABSOLUTE = 'absolute'
+"""Absolute context type. Used for absolute position or transform sequence contexts."""
+
 CTYPE_ANY = 'any'
+"""Any context type."""
+
 CTYPE_NONE = 'none'
+"""No context type."""
+
 CTYPE_PLANAR = 'planar'
+"""Planar context type. Used for planar position sequence contexts."""
+
 CTYPES = [
     CTYPE_ABSOLUTE, CTYPE_ANY,
     CTYPE_NONE, CTYPE_PLANAR
 ]
+"""The list of defined context types."""
 
 # KEYFRAME TYPES
 KFTYPE_NONE = 'none'
+"""No keyframe type."""
+
 KFTYPE_ABSOLUTE_POSITION = 'absolute.position'
+"""Absolute position keyframe type. Indicates that the values of the keyframe are absolute positions."""
+
 KFTYPE_ABSOLUTE_TRANSFORM = 'absolute.transform'
+"""Absolute transform keyframe type. Indicates that the values of the keyframe are absolute transforms."""
+
 KFTYPE_PLANAR = 'planar'
+"""Planar keyframe type. Indicates that the values are coordinate pairs."""
+
 KFTYPES = [
     KFTYPE_NONE, KFTYPE_ABSOLUTE_POSITION,
     KFTYPE_ABSOLUTE_TRANSFORM, KFTYPE_PLANAR
 ]
+"""The list of defined keyframe types."""
