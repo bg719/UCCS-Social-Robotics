@@ -21,6 +21,6 @@
   <robotRequirement model="H25600" />
  </requirements>
  <services>
-  <service autorun="false" name="main" execStart="/usr/bin/python2 scripts/main.py"/>
+  <service autorun="true" name="main" execStart="/usr/bin/python2 scripts/simyan.py"/>
  </services>
 </package>
