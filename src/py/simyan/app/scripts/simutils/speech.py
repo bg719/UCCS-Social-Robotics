@@ -6,13 +6,13 @@ from inspect import getargspec, ismethod
 
 
 class QiState(Enum):
+    """ class QiState for qiChatBuilder """
     Blank = 0
     Topic = 1
     Language = 2
     Concept = 3
     User = 4
     Dialog = 5
-    Events = 6
 
 
 class QiChatBuilder:
@@ -21,15 +21,9 @@ class QiChatBuilder:
         self.concepts = {}
         self.state = QiState.Blank
 
-    def set_topic(self, topic= str):
-        """
-        set qiChat topic
-        qiChat topic would set up conversational topic for the robot and user
-        Example: builder.set_topic('Greetings')
-
-        :param topic: (str) the topic
-        :returns: builder
-        """
+    def set_topic(self, topic):
+        """sets topic for qiChat"""
+        # if state of qiChat script has a blank topic, then raise error to set topic  for the qiChat script
         if not self.state == QiState.Blank:
             raise ValueError("Can only set topic for a blank chat script.")
         if not topic.startswith('~'):
@@ -40,36 +34,30 @@ class QiChatBuilder:
         self.state = QiState.Topic
         return self
 
-    def set_language(self, language= str):
-        """
-        set qiChat language
-        qiChat language would set up a langauge for the robot to understand the user
-        (enu is the syntax for English)
-        Example: builder.set_language('enu')
+    def set_language(self, language):
+        """sets language for qiChat"""
+        # if state of qiChat does not have a language not set up,
+        # then raise error to set up language for the the qiChat script
+        if not self.state == QiState.Topic:
+           raise ValueError ("Can only set language for a blank chat script.")
 
-        :param language: (str)the language
-        :returns: builder
-
-        """
         if not language.endswith('\n'):
             language=language+'\n'
         self.script += 'language: ' + language
         self.state = QiState.Language
         return self
 
-    def add_concept(self, concept= str, definitions=[]):
-        """
-         adds a qiChat concept
-         qiChat concept defines a static list of items (words and/or phrases) that refer to one idea.
-         Example: builder.add_concept('greetings',['hi' 'hello' 'hey there'])
-
-        :param concept: (str) the concept
-        :param definitions: (list) the definitions
-        :returns: builder
-        """
+    def add_concept(self, concept, definitions=[]):
+        """sets up qiChat concept """
+        # add a concept dictionary
         concept_def = {
-            'get_name': concept
+            'name': concept
         }
+
+        # If the state of qiChat does not have a topic, language, and concept set up,
+        # then raise error to set up a topic, language, and concept for qiChat script
+        if not self.state in (QiState.Topic, QiState.Language, QiState.Concept) :
+            raise ValueError("qiChat must set up a concept for both user and robot ")
         if not concept.startswith('('):
             concept='('+concept
         if not concept.endswith(')'):
@@ -86,16 +74,12 @@ class QiChatBuilder:
         self.state = QiState.Concept
         return self
 
-    def user_says(self, say= str):
-        """
-        set qiChat for user's sayings
-        builds defined dialog for the user to speak towards the robot
-        Example: builder.user_says('Hello')
-
-        :param say: (str) the sayings
-        :returns: builder
-
-        """
+    def user_says(self, say):
+        """sets user says for qiChat """
+        # if the state of qiChat for user says is greater than a blank script,
+        # then  set up topic to add the user says for qiChat script
+        if not self.state > QiState.Blank:
+            raise ValueError("qiChat must define a topic for user.")
         if not say.startswith('('):
             say= '('+say
         if not say.endswith(')\n'):
@@ -104,15 +88,12 @@ class QiChatBuilder:
         self.state = QiState.User
         return self
 
-    def robot_dialog(self, dialog= str):
-        """
-        add qiChat robot dialog
-        builds defined dialog for the robot to respond to the user
-        Example: builder.robot_dialog('Hello there')
-
-        :param dialog: (str) the dialog
-        :returns: builder
-        """
+    def robot_dialog(self, dialog):
+        """ sets robot dialog for qiChat """
+        # if the state of qiChat for robot dialog  is greater than a blank script,
+        # then  set up topic to add robot dialog  for qiChat script
+        if not self.state >  QiState.Blank:
+            raise ValueError("qiChat must define a topic for robot .")
         if not dialog.endswith('\n'):
             dialog = dialog +'\n'
         self.script += '' + dialog
@@ -120,10 +101,7 @@ class QiChatBuilder:
         return self
 
     def build(self):
-        """
-        builds qiChat scripts
-        :returns: qiChat script
-        """
+        """builds the qiChat scripts"""
         return self.script
 
 
