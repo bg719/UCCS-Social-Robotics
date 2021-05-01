@@ -96,8 +96,7 @@ class MotionSequenceContext(object):
                 return False
             return motion_service.registerContext(self)
         except Exception as e:
-            print(e.message, e.args)
-            return False
+            return False, e
 
     def unregister(self, motion_service):
         """
@@ -111,4 +110,3 @@ class MotionSequenceContext(object):
         if motion_service is None:
             return False
         return motion_service.removeContext(self.get_name())
-

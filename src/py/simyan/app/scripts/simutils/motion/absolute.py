@@ -406,7 +406,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             # thresholds = context.get_thresholds() or 0.001
 
             for current in keyframes:
-                if current.with_previous and (current.start is None or idx == 0):
+                if (current.with_previous and current.start is None) or idx == 0:
                     self._append(invoke_list[idx], current, last)
                 else:
                     idx += 1
