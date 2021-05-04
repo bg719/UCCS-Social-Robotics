@@ -5,7 +5,7 @@
     "sequences": [
       {
         "type": "absolute",
-        "duration": 3,
+        "duration": 2,
         "effector": "LArm",
         "frame": 2,
         "axisMask": 7,

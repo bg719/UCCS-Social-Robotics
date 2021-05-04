@@ -58,7 +58,7 @@ class SIMDrawingDemo(object):
         self.quit = False
         self.max_reprompts = 3
         self.arm = const.EF_LEFT_ARM
-        self.seconds_to_clean_board = 8
+        self.seconds_to_clean_board = 2
 
     def on_start(self):
         try:
@@ -169,7 +169,7 @@ class SIMDrawingDemo(object):
                 "No sequence for the current arm in drawing specification: {0}".format(spec.name))
 
         if isinstance(sequence, AbsoluteSequence):
-            context = AbsoluteSequenceContext(self.APP_ID, lambda: self.set_initial_pose, extensive_validation=False)
+            context = AbsoluteSequenceContext(self.APP_ID, lambda: self.set_initial_pose(), extensive_validation=False)
         else:
             raise DrawingDemoException(
                 "Unexpected sequence type: {0}".format(type(sequence)))
@@ -178,25 +178,28 @@ class SIMDrawingDemo(object):
             raise DrawingDemoException(
                 "Failed to register {0} context with the motion service.".format(type(context)))
 
-        for kf in sequence.get_keyframes():
-            print(kf.end)
-
         result = context.execute_sequence(sequence, self.motion)
 
+        breath_future = prep.async_enable_breathing((const.CHAIN_ARMS, const.CHAIN_LEGS), self.almotion)
+
         context.unregister(self.motion)
+
+        breath_future.wait()
 
         if not result.success:
             raise DrawingDemoException(
                 "Error executing motion sequence. Status: {0} - Message: {1}".format(result.status, result.message))
 
     def emote(self):
-        pick = random.random()
-        if pick > 0.33:
-            self.tts.say("That was fun!")
-        elif pick > 0.66:
-            self.tts.say("I enjoyed that! Maybe we should do it again!")
-        else:
-            self.tts.say("Wow! I love drawing!")
+        emotes = [
+            "That was fun!",
+            "I enjoyed that! Maybe we should do it again?",
+            "Wow! I love drawing!",
+            "We should do that again!",
+            "I'm having so much fun!"
+        ]
+        pick = random.choice(emotes)
+        self.tts.say(pick)
 
     def prepare_repeat(self):
         self.tts.say("Would you like me to draw again?")
@@ -233,7 +236,13 @@ class SIMDrawingDemo(object):
         self.tts.say("Thanks! Let's draw some more!")
 
     def confirm_selection(self, selection):
-        self.tts.say("Ok, I'll draw a {0}".format(selection))
+        confirmations = [
+            "Ok, I'll draw a {0}",
+            "I'd love to draw a {0}",
+            "Great! I'll draw a {0}"
+        ]
+        pick = random.choice(confirmations)
+        self.tts.say(pick.format(selection))
 
     def chat(self, script):
         topic = self.dialog.loadTopicContent(script)
