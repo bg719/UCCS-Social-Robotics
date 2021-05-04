@@ -56,7 +56,7 @@ class QiChatBuilder:
 
         # If the state of qiChat does not have a topic, language, and concept set up,
         # then raise error to set up a topic, language, and concept for qiChat script
-        if self.state not in (QiState.Topic, QiState.Language, QiState.Concept) :
+        if self.state not in (QiState.Topic, QiState.Language, QiState.Concept):
             raise ValueError("qiChat must set up a concept for both user and robot ")
         if not concept.startswith('('):
             concept = '(' + concept
