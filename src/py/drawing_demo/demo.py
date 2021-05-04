@@ -1,8 +1,6 @@
 __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
-import functools
-
 import qi
 import stk.runner
 import stk.events
@@ -12,15 +10,12 @@ import random
 
 from loaders.absolute_specs import AbsoluteJsonSpecLoader
 
-# import simutils.motion.preparation as prep
-# import simutils.motion.constants as const
-# from simutils.motion.absolute import *
-
 import simyan.app.scripts.simutils.motion.preparation as prep
 from simyan.app.scripts.simutils.motion.absolute import *
 from simyan.app.scripts.simyan import SIMServiceManager
 from simyan.app.scripts.simutils.service import ServiceScope
 from simyan.app.scripts.simutils.speech import SpeechEvent, QiChatBuilder
+from simyan.app.scripts.simutils.timer import async_timer
 
 
 class SIMDrawingDemo(object):
@@ -34,7 +29,6 @@ class SIMDrawingDemo(object):
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
-        # todo: remove these
         self.ssm_scope = ServiceScope(qiapp, SIMServiceManager)
         self.ssm_scope.create_scope()
 
@@ -93,9 +87,9 @@ class SIMDrawingDemo(object):
 
     def listen_for_trigger(self):
         def heard(phrase):
-            pass
+            self.logger.info('Heard: {0}'.format(phrase))
 
-        heard_trigger = SpeechEvent(["let's draw something"], heard)
+        heard_trigger = SpeechEvent("let's draw something", heard)
 
         if not heard_trigger.register(self.speech):
             raise DrawingDemoException(
@@ -105,12 +99,6 @@ class SIMDrawingDemo(object):
         heard_trigger.wait(30)
 
     def explain_activity(self):
-        # builder = QiChatBuilder()
-        # builder.set_topic('drawing')
-        # builder.set_language(self.language)
-        # script = builder.build()
-        # self.chat(script)
-
         self.tts.say("Awesome! I love drawing!")
         objects = self.drawing_specs.keys()
         objects = ", ".join(objects[:-1]) + ", or {0}".format(objects[-1])
@@ -150,7 +138,7 @@ class SIMDrawingDemo(object):
 
         hear_selection.wait(10)
 
-        timer = self.timer(0.1)
+        timer = async_timer(0.1)
         timer.wait()
 
         if not Nonlocal.selection:
@@ -220,7 +208,7 @@ class SIMDrawingDemo(object):
 
         hear_selection.wait(10)
 
-        timer = self.timer(0.1)
+        timer = async_timer(0.1)
         timer.wait()
 
         if Nonlocal.selection not in affirmative:
@@ -230,7 +218,7 @@ class SIMDrawingDemo(object):
 
         self.tts.say("Awesome! I'll give you a couple seconds to wipe the board for me.")
 
-        timer = self.timer(self.seconds_to_clean_board)
+        timer = async_timer(self.seconds_to_clean_board)
         timer.wait()
 
         self.tts.say("Thanks! Let's draw some more!")
@@ -244,19 +232,18 @@ class SIMDrawingDemo(object):
         pick = random.choice(confirmations)
         self.tts.say(pick.format(selection))
 
-    def chat(self, script):
-        topic = self.dialog.loadTopicContent(script)
-        self.dialog.activateTopic(topic)
-        self.dialog.subscribe(self.APP_ID)
-        return topic
-
-    def stop_chat(self, topic, really=False):
-        if really:
-            self.dialog.unsubscribe(self.APP_ID)
-            self.dialog.deactivateTopic(topic)
-            self.dialog.unloadTopic(topic)
-        return True
-
+    # def chat(self, script):
+    #     topic = self.dialog.loadTopicContent(script)
+    #     self.dialog.activateTopic(topic)
+    #     self.dialog.subscribe(self.APP_ID)
+    #     return topic
+    #
+    # def stop_chat(self, topic, really=False):
+    #     if really:
+    #         self.dialog.unsubscribe(self.APP_ID)
+    #         self.dialog.deactivateTopic(topic)
+    #         self.dialog.unloadTopic(topic)
+    #     return True
 
     @qi.nobind
     def load_drawing_specs(self):
@@ -299,12 +286,6 @@ class SIMDrawingDemo(object):
     def on_stop(self):
         """Cleanup (add yours if needed)"""
         self.logger.info("SIMDrawingDemo finished.")
-
-    @qi.nobind
-    def timer(self, seconds):
-        timer = qi.Promise()
-        qi.async(functools.partial(timer.setValue, True), delay=int(seconds*1000000))
-        return timer.future()
 
 
 class DrawingDemoException(Exception):

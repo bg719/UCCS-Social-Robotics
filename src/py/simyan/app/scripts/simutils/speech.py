@@ -130,6 +130,9 @@ class SpeechEvent:
         if not (0 < minimum_confidence <= 1):
             raise ValueError('Minimum confidence must be a value between 0 and 1.')
 
+        if isinstance(phrases, str):
+            phrases = [phrases]
+
         self.callback = callback
         self.phrases = list(phrases)
         self.minimum_confidence = minimum_confidence
