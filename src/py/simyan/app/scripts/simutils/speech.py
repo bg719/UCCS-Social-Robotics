@@ -27,7 +27,7 @@ class QiChatBuilder:
         if not self.state == QiState.Blank:
             raise ValueError("Can only set topic for a blank chat script.")
         if not topic.startswith('~'):
-            topic = '~'+topic
+            topic = '~' + topic
         if not topic.endswith('()\n'):
             topic = topic + '()\n'
         self.script += 'topic: ' + topic
@@ -39,10 +39,10 @@ class QiChatBuilder:
         # if state of qiChat does not have a language not set up,
         # then raise error to set up language for the the qiChat script
         if not self.state == QiState.Topic:
-           raise ValueError ("Can only set language for a blank chat script.")
+            raise ValueError("Can only set language for a blank chat script.")
 
         if not language.endswith('\n'):
-            language=language+'\n'
+            language = language+'\n'
         self.script += 'language: ' + language
         self.state = QiState.Language
         return self
@@ -56,19 +56,19 @@ class QiChatBuilder:
 
         # If the state of qiChat does not have a topic, language, and concept set up,
         # then raise error to set up a topic, language, and concept for qiChat script
-        if not self.state in (QiState.Topic, QiState.Language, QiState.Concept) :
+        if self.state not in (QiState.Topic, QiState.Language, QiState.Concept) :
             raise ValueError("qiChat must set up a concept for both user and robot ")
         if not concept.startswith('('):
-            concept='('+concept
+            concept = '(' + concept
         if not concept.endswith(')'):
-            concept = concept+')'
+            concept = concept + ')'
 
         my_def = ' ^repeat['
         for definition in definitions:
             my_def += ' {0} '.format(definition)
-        my_def=my_def+']'
-        concept_def['definition'] = my_def+']'
-        concept = concept+my_def+'\n'
+        my_def = my_def + ']'
+        concept_def['definition'] = my_def + ']'
+        concept = concept + my_def + '\n'
         self.concepts[concept] = my_def
         self.script += 'concept:' + concept
         self.state = QiState.Concept
@@ -81,9 +81,9 @@ class QiChatBuilder:
         if not self.state > QiState.Blank:
             raise ValueError("qiChat must define a topic for user.")
         if not say.startswith('('):
-            say= '('+say
+            say = '(' + say
         if not say.endswith(')\n'):
-            say = say+')\n'
+            say = say + ')\n'
         self.script += 'u: ' + say
         self.state = QiState.User
         return self
@@ -92,12 +92,12 @@ class QiChatBuilder:
         """ sets robot dialog for qiChat """
         # if the state of qiChat for robot dialog  is greater than a blank script,
         # then  set up topic to add robot dialog  for qiChat script
-        if not self.state >  QiState.Blank:
+        if not self.state > QiState.Blank:
             raise ValueError("qiChat must define a topic for robot .")
         if not dialog.endswith('\n'):
-            dialog = dialog +'\n'
+            dialog = dialog + '\n'
         self.script += '' + dialog
-        self.state= QiState.Dialog
+        self.state = QiState.Dialog
         return self
 
     def build(self):
