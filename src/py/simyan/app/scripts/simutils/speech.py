@@ -205,7 +205,7 @@ class SpeechEvent:
         else:
             return False
 
-    def wait(self, timeout):
+    def wait(self, timeout=None):
         """
         Waits for the speech event to occur. If a timeout is specified
         the event subscription will be canceled if it has not already
@@ -215,7 +215,10 @@ class SpeechEvent:
         :return: (qi.FutureState) The final state of the event future.
         """
         if self._is_subscribed:
-            self._future.wait(timeout*1000000)
+            if not timeout:
+                return self._future.wait()
+            else:
+                return self._future.wait(timeout*1000000)
 
     def _call(self, future):
         """

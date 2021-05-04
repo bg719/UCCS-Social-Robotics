@@ -1,11 +1,14 @@
 __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
+import functools
+
 import qi
 import stk.runner
 import stk.events
 import stk.services
 import stk.logging
+import random
 
 from loaders.absolute_specs import AbsoluteJsonSpecLoader
 
@@ -17,7 +20,7 @@ import simyan.app.scripts.simutils.motion.preparation as prep
 from simyan.app.scripts.simutils.motion.absolute import *
 from simyan.app.scripts.simyan import SIMServiceManager
 from simyan.app.scripts.simutils.service import ServiceScope
-from simyan.app.scripts.simutils.speech import SpeechEvent
+from simyan.app.scripts.simutils.speech import SpeechEvent, QiChatBuilder
 
 
 class SIMDrawingDemo(object):
@@ -35,40 +38,36 @@ class SIMDrawingDemo(object):
         self.ssm_scope = ServiceScope(qiapp, SIMServiceManager)
         self.ssm_scope.create_scope()
 
-        # Standard services
+        # NAO services
         self.almotion = self.s.ALMotion
+        self.dialog = self.s.ALDialog
         self.posture = self.s.ALRobotPosture
+        self.tts = self.s.ALTextToSpeech
 
         # SIMYAN services
         self.ssm = self.s.SIMServiceManager
-        self.speech = self.s.SIMSpeech
-        self.motion = self.s.SIMMotion
+        self.speech = None
+        self.motion = None
 
         # Demo state
         self.drawing_specs = {}
         self.loaders = {
             const.CTYPE_ABSOLUTE: AbsoluteJsonSpecLoader()
         }
+        self.language = "English"
         self.quit = False
         self.max_reprompts = 3
         self.arm = const.EF_LEFT_ARM
+        self.seconds_to_clean_board = 8
 
     def on_start(self):
         try:
             self.ssm.startServices()
+            self.speech = self.s.SIMSpeech
+            self.motion = self.s.SIMMotion
 
-            # shapes, failed = self.loader.load('shapes.json')
-            # triangle = shapes['triangle']
-            #
-            # self.logger.info('Creating absolute motion sequence context')
-            # context = AbsoluteSequenceContext(self.APP_ID, lambda: self.set_initial_pose, extensive_validation=False)
-            #
-            # self.logger.info('Registering sequence context')
-            # success = context.register(self.motion)
-            # self.logger.info('Registered: {0}'.format(success))
-            #
-            # self.logger.info('Executing sequence')
-            # context.execute_sequence(triangle.sequences[0], self.motion)
+            self.load_drawing_specs()
+            self.logger.info("Drawing Specs: {0}".format(self.drawing_specs.keys()))
 
             self.start_demo()
         except Exception as e:
@@ -77,57 +76,90 @@ class SIMDrawingDemo(object):
             self.stop()
 
     def start_demo(self):
-        self.greet_person()
-        self.explain_activity()
-
+        topic = None
         try:
+            self.logger.info("Starting demo.")
+            self.listen_for_trigger()
+
+            self.logger.info("Explaining activity...")
+            self.explain_activity()
+
+            self.logger.info("Beginning main drawing activity...")
             self.main_activity()
         except Exception as e:
             self.logger.error("Encountered error: {0}".format(e.message))
+        finally:
+            self.stop_chat(topic, True)
 
-    def greet_person(self):
-        pass
+    def listen_for_trigger(self):
+        def heard(phrase):
+            pass
+
+        heard_trigger = SpeechEvent(["let's draw something"], heard)
+
+        if not heard_trigger.register(self.speech):
+            raise DrawingDemoException(
+                "Could not register speech event with SIMYAN speech service.")
+
+        self.logger.info("Listening for trigger phrase...")
+        heard_trigger.wait(30)
 
     def explain_activity(self):
-        pass
+        # builder = QiChatBuilder()
+        # builder.set_topic('drawing')
+        # builder.set_language(self.language)
+        # script = builder.build()
+        # self.chat(script)
+
+        self.tts.say("Awesome! I love drawing!")
+        objects = self.drawing_specs.keys()
+        objects = ", ".join(objects[:-1]) + ", or {0}".format(objects[-1])
+        self.tts.say("I can draw a {0}".format(objects))
 
     def main_activity(self):
         while not self.quit:
             drawing = self.select_drawing()
 
             if drawing not in self.drawing_specs:
-                self.invalid_selection()
+                self.invalid_selection(drawing)
                 continue
 
+            self.confirm_selection(drawing)
             self.draw(self.drawing_specs[drawing])
             self.emote()
             self.prepare_repeat()
 
     def select_drawing(self, reprompt=0):
         if reprompt > self.max_reprompts:
-            raise DrawingDemoException('Maximum number of drawing selection re-prompts reached.')
+            raise DrawingDemoException(
+                'Maximum number of drawing selection re-prompts reached.')
 
-        selection = None
+        class Nonlocal:
+            selection = None
 
         def set_selection(phrase):
-            selection = phrase
+            Nonlocal.selection = phrase
 
         hear_selection = SpeechEvent(self.drawing_specs.keys(), set_selection)
 
-        # todo: prompt person to pick shape
+        self.tts.say("What would you like me to draw?")
 
         if not hear_selection.register(self.speech):
-            raise DrawingDemoException("Could not register speech event with SIMYAN speech service.")
+            raise DrawingDemoException(
+                "Could not register speech event with SIMYAN speech service.")
 
-        hear_selection.wait(5)
+        hear_selection.wait(10)
 
-        if not selection:
+        timer = self.timer(0.1)
+        timer.wait()
+
+        if not Nonlocal.selection:
             return self.select_drawing(reprompt + 1)
 
-        return selection
+        return Nonlocal.selection
 
-    def invalid_selection(self):
-        pass
+    def invalid_selection(self, selection):
+        self.tts.say("I'm sorry, but I don't know how to draw a {0}".format(selection))
 
     def draw(self, spec):
         sequence = next(s for s in spec.sequences if s.effector == self.arm)
@@ -139,23 +171,83 @@ class SIMDrawingDemo(object):
         if isinstance(sequence, AbsoluteSequence):
             context = AbsoluteSequenceContext(self.APP_ID, lambda: self.set_initial_pose, extensive_validation=False)
         else:
-            raise DrawingDemoException("Unexpected sequence type: {0}".format(type(sequence)))
+            raise DrawingDemoException(
+                "Unexpected sequence type: {0}".format(type(sequence)))
 
         if not context.register(self.motion):
             raise DrawingDemoException(
                 "Failed to register {0} context with the motion service.".format(type(context)))
 
+        for kf in sequence.get_keyframes():
+            print(kf.end)
+
         result = context.execute_sequence(sequence, self.motion)
+
+        context.unregister(self.motion)
 
         if not result.success:
             raise DrawingDemoException(
                 "Error executing motion sequence. Status: {0} - Message: {1}".format(result.status, result.message))
 
     def emote(self):
-        pass
+        pick = random.random()
+        if pick > 0.33:
+            self.tts.say("That was fun!")
+        elif pick > 0.66:
+            self.tts.say("I enjoyed that! Maybe we should do it again!")
+        else:
+            self.tts.say("Wow! I love drawing!")
 
     def prepare_repeat(self):
-        pass
+        self.tts.say("Would you like me to draw again?")
+
+        class Nonlocal:
+            selection = None
+
+        def set_selection(phrase):
+            Nonlocal.selection = phrase
+
+        affirmative = ('yes', 'yeah', 'sure', 'ok')
+        negative = ('no', 'nope')
+        hear_selection = SpeechEvent(affirmative + negative, set_selection)
+
+        if not hear_selection.register(self.speech):
+            raise DrawingDemoException(
+                "Could not register speech event with SIMYAN speech service.")
+
+        hear_selection.wait(10)
+
+        timer = self.timer(0.1)
+        timer.wait()
+
+        if Nonlocal.selection not in affirmative:
+            self.tts.say("Ok, we'll stop drawing for now.")
+            self.quit = True
+            return
+
+        self.tts.say("Awesome! I'll give you a couple seconds to wipe the board for me.")
+
+        timer = self.timer(self.seconds_to_clean_board)
+        timer.wait()
+
+        self.tts.say("Thanks! Let's draw some more!")
+
+    def confirm_selection(self, selection):
+        self.tts.say("Ok, I'll draw a {0}".format(selection))
+
+    def chat(self, script):
+        topic = self.dialog.loadTopicContent(script)
+        self.dialog.activateTopic(topic)
+        self.dialog.subscribe(self.APP_ID)
+        return topic
+
+    def stop_chat(self, topic, really=False):
+        if really:
+            self.dialog.unsubscribe(self.APP_ID)
+            self.dialog.deactivateTopic(topic)
+            self.dialog.unloadTopic(topic)
+        return True
+
 
     @qi.nobind
     def load_drawing_specs(self):
@@ -165,11 +257,13 @@ class SIMDrawingDemo(object):
 
     @qi.nobind
     def set_initial_pose(self):
+        self.logger.info("Setting initial pose for motion sequence.")
+
         # set exact starting position + joint stiffness
         self.almotion.wakeUp()
         self.almotion.setStiffnesses(const.CHAIN_BODY, 1.0)
         self.almotion.setStiffnesses(const.CHAIN_ARMS, 0.0)
-        self.posture.goToPosture("Stand", 0.5)
+        self.posture.goToPosture(const.POSE_STAND, 0.5)
         self.almotion.setStiffnesses(const.CHAIN_ARMS, 0.0)
         self.almotion.setStiffnesses(const.CHAIN_HEAD, 0.0)
 
@@ -196,6 +290,12 @@ class SIMDrawingDemo(object):
     def on_stop(self):
         """Cleanup (add yours if needed)"""
         self.logger.info("SIMDrawingDemo finished.")
+
+    @qi.nobind
+    def timer(self, seconds):
+        timer = qi.Promise()
+        qi.async(functools.partial(timer.setValue, True), delay=int(seconds*1000000))
+        return timer.future()
 
 
 class DrawingDemoException(Exception):
