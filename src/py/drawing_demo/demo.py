@@ -1,6 +1,8 @@
 __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
+import functools
+
 import qi
 import stk.runner
 import stk.events
@@ -163,6 +165,8 @@ class SIMDrawingDemo(object):
             raise DrawingDemoException(
                 "Failed to register {0} context with the motion service.".format(type(context)))
 
+        qi.async(functools.partial(lambda d: self.tts.say(d), spec.description), delay=9000000)
+
         result = context.execute_sequence(sequence, self.motion)
         breath_future = prep.async_enable_breathing((const.CHAIN_ARMS, const.CHAIN_LEGS), self.almotion)
         context.unregister(self.motion)
@@ -175,7 +179,7 @@ class SIMDrawingDemo(object):
     def emote(self):
         emotes = [
             "That was fun!",
-            "I enjoyed that! Maybe we should do it again?",
+            "I enjoyed that! Maybe we should do it again!",
             "Wow! I love drawing!",
             "We should do that again!",
             "I'm having so much fun!"

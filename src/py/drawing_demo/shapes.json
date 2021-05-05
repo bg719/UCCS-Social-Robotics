@@ -1,7 +1,7 @@
 {
   "circle": {
     "keywords": ["circle", "shape"],
-    "description": "A circle.",
+    "description": "A circle is just one line that connects to itself.",
     "sequences": [
       {
         "type": "absolute",
@@ -135,7 +135,7 @@
   },
   "house": {
     "keywords": ["house", "pentagon", "shape"],
-    "description": "A house.",
+    "description": "A house is a triangle stacked on top of a square.",
     "sequences": [
       {
         "type": "absolute",
@@ -241,7 +241,7 @@
   },
   "square": {
     "keywords": ["square", "rectangle", "box", "shape"],
-    "description": "A square.",
+    "description": "A square has four equal length sides.",
     "sequences": [
       {
         "type": "absolute",
@@ -291,7 +291,7 @@
   },
   "triangle": {
     "keywords": ["triangle", "shape"],
-    "description": "A triangle.",
+    "description": "A triangle has three sides.",
     "sequences": [
       {
         "type": "absolute",
