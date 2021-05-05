@@ -9,10 +9,6 @@ import stk.logging
 
 from loaders.absolute_specs import AbsoluteJsonSpecLoader
 
-# import simutils.motion.preparation as prep
-# import simutils.motion.constants as const
-# from simutils.motion.absolute import *
-
 import simyan.app.scripts.simutils.motion.preparation as prep
 from simyan.app.scripts.simutils.motion.absolute import *
 from simyan.app.scripts.simyan import SIMServiceManager

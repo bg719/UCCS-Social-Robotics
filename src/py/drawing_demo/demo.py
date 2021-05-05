@@ -70,7 +70,6 @@ class SIMDrawingDemo(object):
             self.stop()
 
     def start_demo(self):
-        topic = None
         try:
             self.logger.info("Starting demo.")
             self.listen_for_trigger()
@@ -82,8 +81,6 @@ class SIMDrawingDemo(object):
             self.main_activity()
         except Exception as e:
             self.logger.error("Encountered error: {0}".format(e.message))
-        finally:
-            self.stop_chat(topic, True)
 
     def listen_for_trigger(self):
         def heard(phrase):
@@ -167,11 +164,8 @@ class SIMDrawingDemo(object):
                 "Failed to register {0} context with the motion service.".format(type(context)))
 
         result = context.execute_sequence(sequence, self.motion)
-
         breath_future = prep.async_enable_breathing((const.CHAIN_ARMS, const.CHAIN_LEGS), self.almotion)
-
         context.unregister(self.motion)
-
         breath_future.wait()
 
         if not result.success:
@@ -231,19 +225,6 @@ class SIMDrawingDemo(object):
         ]
         pick = random.choice(confirmations)
         self.tts.say(pick.format(selection))
-
-    # def chat(self, script):
-    #     topic = self.dialog.loadTopicContent(script)
-    #     self.dialog.activateTopic(topic)
-    #     self.dialog.subscribe(self.APP_ID)
-    #     return topic
-    #
-    # def stop_chat(self, topic, really=False):
-    #     if really:
-    #         self.dialog.unsubscribe(self.APP_ID)
-    #         self.dialog.deactivateTopic(topic)
-    #         self.dialog.unloadTopic(topic)
-    #     return True
 
     @qi.nobind
     def load_drawing_specs(self):
