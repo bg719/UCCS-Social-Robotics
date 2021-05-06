@@ -402,17 +402,19 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
         try:
             invoke_list = [self._new_invocation(keyframes[0], motion_proxy)]
             idx = 0
+            count = 0
             last = keyframes[0]
             # thresholds = context.get_thresholds() or 0.001
 
             for current in keyframes:
-                if (current.with_previous and current.start is None) or idx == 0:
+                if (current.with_previous and current.start is None) or count == 0:
                     self._append(invoke_list[idx], current, last)
                 else:
                     idx += 1
                     invoke_list.append(self._new_invocation(current, motion_proxy))
                     self._append(invoke_list[idx], current, last)
                 last = current
+                count += 1
         except KeyframeException as e:
             return ExecutionResult.keyframe_exception(e)
         except KeyframeTypeError as e:
