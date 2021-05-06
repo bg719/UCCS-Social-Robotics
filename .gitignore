@@ -236,7 +236,8 @@ venv.bak/
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
+Scripts
+#[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 ### JetBrains template

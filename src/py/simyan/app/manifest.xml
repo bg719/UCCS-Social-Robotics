@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package uuid="simyan" version="0.0.1">
+ <names>
+  <name lang="en_US">simyan</name>
+ </names>
+ <supportedLanguages>
+  <language>en_US</language>
+ </supportedLanguages>
+ <descriptionLanguages>
+  <language>en_US</language>
+ </descriptionLanguages>
+ <contents>
+  <behaviorContent path=".">
+   <userRequestable/>
+   <nature>interactive</nature>
+   <permissions/>
+  </behaviorContent>
+ </contents>
+ <requirements>
+  <naoqiRequirement minVersion="2.3"/>
+  <robotRequirement model="H25600" />
+ </requirements>
+ <services>
+  <service autorun="true" name="main" execStart="/usr/bin/python2 scripts/simyan.py"/>
+ </services>
+</package>

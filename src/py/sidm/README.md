@@ -1,1 +1,0 @@
-#SIMYAN - Social Interactive Drawing Activity Module
