@@ -85,72 +85,72 @@ def enable_right_arm_control(motion_proxy, stiffness=1.0):
     return _set_effector_control(const.EF_RIGHT_ARM, True, motion_proxy, stiffness)
 
 
-def async_disable_breathing(effectors, motion_proxy):
+def async_disable_breathing(chains, motion_proxy):
     """
     Disables the "breathing" motions for the specified effectors, then
     delays for 2 seconds to wait for completion.
 
-    :param effectors: (Iterable[str]) The effectors.
+    :param chains: (Iterable[str]) The chains.
     :param motion_proxy: (ALMotion) The motion proxy or service.
     :return: (qi.Future) A future that can be waited upon to
         ensure the action has completed.
     """
     promise = qi.Promise()
-    disable_breathing(effectors, motion_proxy)
-    qi.async(partial(promise.setValue, None), delay=2000)
+    disable_breathing(chains, motion_proxy)
+    qi.async(partial(promise.setValue, None), delay=2000000)
     return promise.future()
 
 
-def async_enable_breathing(effectors, motion_proxy):
+def async_enable_breathing(chains, motion_proxy):
     """
     Enables the "breathing" motions for the specified effectors, then
     delays for 2 seconds to wait for completion.
 
-    :param effectors: (Iterable[str]) The effectors.
+    :param chains: (Iterable[str]) The chains.
     :param motion_proxy: (ALMotion) The motion proxy or service.
     :return: (qi.Future) A future that can be waited upon to
         ensure the action has completed.
     """
     promise = qi.Promise()
-    enable_breathing(effectors, motion_proxy)
-    qi.async(partial(promise.setValue, None), delay=2000)
+    enable_breathing(chains, motion_proxy)
+    qi.async(partial(promise.setValue, None), delay=2000000)
     return promise.future()
 
 
-def disable_breathing(effectors, motion_proxy):
+def disable_breathing(chains, motion_proxy):
     """
-    Disables the "breathing" motions for the specified effectors.
+    Disables the "breathing" motions for the specified chains.
 
     WARNING: May take up to 2 seconds to take effect. Recommend using
     the async method and waiting on the future it returns.
 
-    :param effectors: (List[str]) The effectors.
+    :param chains: (List[str]) The chains.
     :param motion_proxy: (ALMotion) The motion proxy or service.
     """
-    effectors = set(effectors)
-    if not all(effector in const.EFFECTORS for effector in effectors):
+    chains = set(chains)
+    if not all(chain in const.CHAINS for chain in chains):
         raise ValueError("Invalid effector(s) in set.")
 
-    for effector in effectors:
-        motion_proxy.setBreathing(effector, True)
+    for chain in chains:
+        motion_proxy.setBreathEnabled(chain, False)
 
 
-def enable_breathing(effectors, motion_proxy):
+def enable_breathing(chains, motion_proxy):
     """
-    Enables the "breathing" motions for the specified effectors.
+    Enables the "breathing" motions for the specified chains.
 
     WARNING: May take up to 2 seconds to take effect. Recommend using
     the async method and waiting on the future it returns.
 
-    :param effectors: (List[str]) The effectors.
+    :param chains: (List[str]) The chains.
     :param motion_proxy: (ALMotion) The motion proxy or service.
     """
-    effectors = set(effectors)
-    if not all(effector in const.EFFECTORS for effector in effectors):
+    chains = set(chains)
+    if not all(chain in const.CHAINS for chain in chains):
         raise ValueError("Invalid effector(s) in set.")
 
-    for effector in effectors:
-        motion_proxy.setBreathing(effector, False)
+    for chain in chains:
+        motion_proxy.setBreathEnabled(chain, True)
 
 
 def _set_effector_control(effector, enabled, motion_proxy, stiffness):

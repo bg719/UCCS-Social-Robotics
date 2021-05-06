@@ -159,7 +159,33 @@ EFFECTORS = (
     EF_LEFT_ARM, EF_LEFT_LEG,
     EF_RIGHT_ARM, EF_RIGHT_LEG
 )
-"""The list of all of the robot's effectors."""
+"""The set of all of the robot's effectors."""
+
+# CHAINS
+CHAIN_BODY = "Body"
+"""The identifier for the body chain."""
+
+CHAIN_LEGS = "Legs"
+"""The identifier for the legs chain."""
+
+CHAIN_ARMS = "Arms"
+"""The identifier for the arms chain."""
+
+CHAIN_LEFT_ARM = "LArm"
+"""The identifier for the left arm chain."""
+
+CHAIN_RIGHT_ARM = "RArm"
+"""The identifier for the right arm chain."""
+
+CHAIN_HEAD = "Head"
+"""The identifier for the head chain."""
+
+CHAINS = (
+    CHAIN_BODY, CHAIN_HEAD,
+    CHAIN_LEGS, CHAIN_ARMS,
+    CHAIN_LEFT_ARM, CHAIN_RIGHT_ARM
+)
+"""The set of all of the robot's chain names."""
 
 # PREDEFINED POSTURES
 POSE_STAND = 'Stand'

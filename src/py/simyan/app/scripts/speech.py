@@ -60,6 +60,7 @@ class SIMSpeech(object):
 
         self._update_vocabulary()
         self.lock.release()
+        self.logger.info("Subscribing complete")
         return info.future()
 
     @qi.bind(returnType=qi.Void, paramsType=[])
