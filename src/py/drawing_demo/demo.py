@@ -1,13 +1,12 @@
 __version__ = "0.0.0"
 __author__ = 'ancient-sentinel'
 
-import functools
-
 import qi
 import stk.runner
 import stk.events
 import stk.services
 import stk.logging
+import functools
 import random
 
 from loaders.absolute_specs import AbsoluteJsonSpecLoader
@@ -16,7 +15,7 @@ import simyan.app.scripts.simutils.motion.preparation as prep
 from simyan.app.scripts.simutils.motion.absolute import *
 from simyan.app.scripts.simyan import SIMServiceManager
 from simyan.app.scripts.simutils.service import ServiceScope
-from simyan.app.scripts.simutils.speech import SpeechEvent, QiChatBuilder
+from simyan.app.scripts.simutils.speech import SpeechEvent
 from simyan.app.scripts.simutils.timer import async_timer
 
 

@@ -22,12 +22,8 @@ SDK, as well as provides guidance for adding further extensions to it.
 ### [Conventions](#conventions)
   - [Naming](#naming)
 
----
-&nbsp;
 
 ## SIMYAN Services
-
-&nbsp;
 
 ### `SIMServiceManager` in *simyan.py*
 The SIMYAN service manager provides the means for initializing and orchestrating SIMYAN services.
@@ -224,11 +220,67 @@ Stops and unregisters the SIMYAN speech service.
 The motion package contains a number of modules to support an abstraction layer for
 designing, constructing, and executing complex motion sequences.
 
+&nbsp;
+
 #### `_context` Module
 
 This module contains internal motion package components for defining motion sequence
 contexts. Currently, the only thing in the module is the `MotionSequenceContext` abstract
 class, which should be used as the base class for all motion sequence context implementations.
+
+
+##### Classes
+
+`class MotionSequenceContext (abstract)`
+
+This class serves as the base class for all motion sequence context implementations. It defines
+a couple of abstract methods and properties to standardize contextual information, regardless of
+the particulars of the implementation.
+
+* `extensive_validation: bool (abstract)` - A property indicating whether the context performs extensive validation
+  before sending motion sequences to be executed by the `SIMMotion` service. The intent of extensive validation
+  is to attempt to catch any errors detactable by the client before attempting execution.
+  
+
+* `check_sequence(sequence: simutils.motion._sequence.MotionSequence, extensive: bool) -> bool (abstract)` - A
+  method for checking a sequence and optionally performing extensive validation. This method is called
+  automatically by the `execute_sequence` method.
+    
+
+* `execute_sequence(sequence: simutils.motion._sequence.MotionSequence, motion_service: SIMMotion)
+  -> simutils.motion.models.ExecutionResult` - A method which performs validation on the provided sequence
+  and then sends the sequence to the `SIMMotion` service for execution.
+  
+
+* `get_bounds() -> object (abstract)` - A method which returns contextual boundary information for
+  executing a motion sequence. `None` indicates that the context's region is unbounded. This method is
+  invoked by the selected motion sequence handler in the `SIMMotion` service.
+  
+
+* `get_ctype() -> str (abstract)` - A method which returns the context type of the context. The context
+  type is used by the `SIMMotion` service to select a handler.
+  
+
+* `get_name() -> str (abstract)` - A method which returns the name of the context. The context name is used
+  to save a reference to the context when it is registered with the `SIMMotion` service.
+  
+
+* `get_or_set_initial_pose() -> Union[str, bool] (abstract)` - A method which either returns the string identifier
+  for a named robot pose (see `simutils.motion.contants` items starting with `POSE_`) or attempts to set
+  the initial position itself. In the second case, the method returns `True` if the position was set successfully
+  or `False` if it was not. The motion sequence handler should not attempt to execute a sequence if this method
+  returns `False`.
+  
+
+* `register(motion_service: SIMMotion) -> bool` - A method which registers the context with the provided
+  motion service. Returns `True` if registration was successful and `False` if it was not.
+  
+
+* `unregister(motion_service: SIMMotion) -> bool` - A method which unregisters the context from the provided
+  motion service. Returns `True` if the context was formerly registered and successfully removed; otherwise,
+  it returns `False`.
+
+&nbsp;
 
 #### `_handler` Module
 
@@ -236,9 +288,125 @@ This module contains internal motion package components for defining motion sequ
 handlers. The core component in this module is the `MotionSequenceHandler` abstract class,
 which should be used as the base class for all motion sequence handler implementations.
 The module also contains constants and helper methods for implementing motion sequence
-handlers. 
+handlers.
+
+##### Terms and Definitions
+
+* *invocation type* - A value used to decide which `ALMotion` method to invoke. The
+  `simutils.motion.absolute.AbsoluteSequenceHandler` uses the keyframe type as the invocation type.
+  Keyframes with the 'absolute.position' type will result in invocation of the `ALMotion.positionInterpolations`
+  method, and the 'absolute.transform' type will result in invocations of the `ALMotion.transfromInterpolations`
+  method.
+
+
+* *invocation list* - A list of invocations to `ALMotion` methods that is built up in order to execute
+  the set of keyframes comprising a motion sequence.
+
+
+* *invocation entry* - A single entry in an *invocation list*. It is a tuple containing the *invocation type*
+  and then the list of *invocation arguments*.
+
+
+* *invocation arguments* - The list of arguments for a single invocation to an `ALMotion` method.
+
+##### Constants
+
+* `TYPE = 0` - A constant value representing the index of the invocation type in an invocation list entry.
+
+
+* `ARGS = 1` - A constant value representing the index of the invocation argument list in an invocation
+  list entry.
+  
+
+* `EFFECTORS = 0` - A constant value representing the index of the effectors vector in an invocation
+  argument list for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`.
+
+
+* `FRAMES = 1` - A constant value representing the index of the frames vector in an invocation argument
+  list for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`.
+
+
+* `PATHS = 2` - A constant value representing the index of the paths vector in an invocation argument
+  list for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`.
+  
+
+* `MASKS = 3` - A constant value representing the index of the masks vector in an invocation argument
+  list for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`.
+  
+
+* `TIMES = 4` - A constant value representing the index of the times vector in an invocation argument
+  list for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`.
+  
+
+##### Helper Methods
+
+* `new_invocation_args() -> Tuple(List, List, List, List, List)` - Returns a new, empty invocation argument
+  set for either `ALMotion.positionInterpolations` or `ALMotion.transformInterpolations`. 
+  
+
+* `are_equal(p1: List[float], p2: List[float], thresholds: Union[float, Iterable[float, Iterable[float]]])
+  -> bool` - Determines whether `p1` and `p2` are equal within the specified threshold(s).
+  
+
+##### Classes
+
+`class KeyframeException(Exception)`
+
+An exception raised due to keyframe errors while attempting to execute a motion sequence.
+
+* `type_mismatch(current: simutils.motion.models.KeyFrame, previous: simutils.motion.models.KeyFrame)
+  -> KeyframeException (static)` - Creates a new exception instance with an error indicating a keyframe
+  type mismatch between `current` and `previous`.
+  
+&nbsp;
+
+`class KeyframeTypeError(ValueError)`
+
+An error due to an invalid keyframe type encountered while attempting to execute a motion sequence.
+
+&nbsp;
+
+`class MotionSequenceHandler (abstract)`
+
+This class serves as the base class for all motion sequence handler implementations. It defines
+a couple of abstract methods and properties to standardize handler interface, regardless of
+the particulars of the implementation.
+
+* `handle_sequence(sequence: simutils.motion._sequence.MotionSequence, context:
+  simutils.motion._context.MotionSequenceContext, motion_proxy: ALMotion, posture_proxy: ALRobotPosture)
+  -> simutils.motion.models.ExecutionResult (abstract)` - A method which handles the execution of the
+  specified motion sequence within the scope of the provided motion sequence context.
+  
+
+* `handles_type(ctype: str) -> bool (abstract)` - A method which determines whether the handler can handle
+  the specified motion sequence context type.
+
+&nbsp;
 
 #### `_sequence` Module
+
+This module contains internal motion package components for defining motion sequences. Currently, the
+only thing in the module is the `MotionSequence` abstract class, which should be used as the base class
+for all motion sequence implementations.
+
+##### Classes
+
+#### `class MotionSequence (abstract)`
+
+This class serves as the base class for all motion sequence implementations. It defines
+a couple of abstract methods and properties to standardize sequence interface, regardless of
+the particulars of the implementation.
+
+* `add_keyframe(keyframe: simutils.motion.models.KeyFrame) -> bool` - A method which appends the
+  provided keyframe to the sequence. It returns `True` if the keyframe was added successfully and 
+  `False` otherwise.
+  
+
+* `get_keyframes() -> List[simutils.motion.models.KeyFrame)` - A method which gets the list of keyframes
+  which comprise the motion sequence.
+
+&nbsp;
+
 #### `absolute` Module
 #### `codes` Module
 #### `constants` Module
