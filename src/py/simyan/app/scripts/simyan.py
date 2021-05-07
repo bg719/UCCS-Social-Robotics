@@ -7,6 +7,7 @@ import stk.runner
 import stk.events
 import stk.services
 import stk.logging
+import threading
 
 # SIMYAN service modules
 from motion import SIMMotion
@@ -33,12 +34,15 @@ class SIMServiceManager(object):
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
+        # Service state
         self.dev = dev
         self.scoped_services = [
             ServiceScope(qiapp, SIMMotion),
             ServiceScope(qiapp, SIMSpeech),
             ServiceScope(qiapp, SIMVision)
         ]
+        self.lock = threading.Lock()
+        self.semaphore = 0
 
     @qi.bind(returnType=qi.Void, paramsType=[])
     def startServices(self):
@@ -77,20 +81,30 @@ class SIMServiceManager(object):
     @qi.nobind
     def _start_services(self):
         """Register SIMYAN services."""
+        self.lock.acquire()
+        self.semaphore += 1
         for service in self.scoped_services:
             self.logger.info("Registering service: {0}".format(service.name))
             if not service.is_started:
                 service.create_scope()
             if not service.is_started:
                 self.logger.info("Registration failed for service: {0}".format(service.name))
+        self.lock.release()
 
     @qi.nobind
     def _stop_services(self):
         """Unregister SIMYAN services."""
-        for service in self.scoped_services:
-            self.logger.info("Stopping service: {0}".format(service.name))
-            if service.is_started:
-                service.close_scope()
+        self.lock.acquire()
+        if self.semaphore == 0:
+            self.lock.release()
+            return
+        elif self.semaphore == 1:
+            for service in self.scoped_services:
+                self.logger.info("Stopping service: {0}".format(service.name))
+                if service.is_started:
+                    service.close_scope()
+        self.semaphore -= 1
+        self.lock.release()
 
 
 if __name__ == "__main__":

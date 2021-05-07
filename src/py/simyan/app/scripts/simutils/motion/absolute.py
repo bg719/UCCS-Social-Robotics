@@ -398,12 +398,14 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
         if not keyframes or len(keyframes) == 0:
             return ExecutionResult.error_result('No keyframes in sequence.')
 
-        # construct ALMotion invocations
+        # ==== Construct ALMotion invocations ====
         try:
             invoke_list = [self._new_invocation(keyframes[0], motion_proxy)]
             idx = 0
             count = 0
             last = keyframes[0]
+
+            # ***THRESHOLD CHECKING CURRENTLY NOT SUPPORTED***
             # thresholds = context.get_thresholds() or 0.001
 
             for current in keyframes:
@@ -424,7 +426,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
                 'Exception while attempting to generate sequence invocations. ' +
                 'Message: {0}'.format(e.message))
 
-        # set initial pose
+        # ==== Set initial pose ====
         try:
             set_pose = context.get_or_set_initial_pose()
 
@@ -442,7 +444,16 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
                 'Exception while attempting to set initial position.' +
                 'Aborting execution of motion sequence.')
 
-        # execute motion sequence
+        # ==== Execute motion sequence ====
+
+        # SUGGESTED: If you are debugging a motion sequence that is not
+        # executing properly, uncommenting the following line will print
+        # the invocation list which you can check against the ALMotion API
+        # to ensure the correct arguments are being constructed for each
+        # call to positionInterpolations() or transformInterpolations().
+
+        # print(invoke_list)
+
         for invocation in invoke_list:
             if invocation[TYPE] == const.KFTYPE_ABSOLUTE_POSITION:
                 motion_proxy.positionInterpolations(*invocation[ARGS])
@@ -533,11 +544,12 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
         :param current: (models.KeyFrame) The current keyframe to be appended.
         :param previous: (models.KeyFrame) The previous keyframe.
         """
-        # we can't mix position and transform keyframes
+        # We can't mix position and transform keyframes!
+        # (They require separate ALMotion calls)
         if current.kftype != previous.kftype:
             raise KeyframeException.type_mismatch(current, previous)
 
-        # if the same effector is specified, simply add to
+        # If the same effector is specified, simply add to
         # it's path and time lists (frame and axis mask discrepancies are
         # currently ignored)
         if current.effector == previous.effector:
@@ -550,7 +562,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             else:
                 times.append(current.duration)
 
-        # if we already have the effector declared, find the index
+        # If we already have the effector declared, find the index
         # of it's lists and add the current position and time
         elif current.effector in invocation[ARGS][EFFECTORS]:
             idx = invocation[ARGS][EFFECTORS].index(current.effector)
@@ -558,7 +570,7 @@ class AbsoluteSequenceHandler(MotionSequenceHandler):
             times = invocation[ARGS][TIMES][idx]
             times.append(current.duration + times[-1])
 
-        # otherwise, we add the new effector to the invocation
+        # Otherwise, we add the new effector to the invocation
         else:
             invocation[ARGS][EFFECTORS].append(current.effector)
             invocation[ARGS][PATHS].append([current.end])
