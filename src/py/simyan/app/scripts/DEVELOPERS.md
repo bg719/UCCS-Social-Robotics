@@ -21,7 +21,7 @@ SDK, as well as provides guidance for adding further extensions to it.
 
 ### [Conventions](#conventions)
   - [Naming](#naming)
-
+                        
 
 ## SIMYAN Services
 
@@ -209,7 +209,30 @@ Stops and unregisters the SIMYAN speech service.
 ---
 
 ### `SIMVision` in *vision.py*
-&lt; Not Implemented Yet &gt;
+The SIMYAN vision service provides many helpful methods that can be used to learn more about the NAO's
+environment and to make specific conversions that may be needed in the future.
+
+#### Methods
+
+* `detectPixels(img: qi.String, pixel_color: qi.Struct, r_range: qi.UInt8, g_range: qi.UInt8, b_range: qi.UInt8) -> qi.List(qi.Struct)`
+
+This method detects all the pixels within a specified RGB range then returns all the pixel locations
+that are detected. The RGB range that is used is based off the input paramaters `pixel_color`, `r_range`,
+`g_range`, and `b_range`. The range is construted by using the r, g, and b values found in `pixel_color`
+as the center points then adding and subtracting `r_range`, `g_range`, and `b_range` from the center points
+to get the boundaries. The parameter `img` is refering to the path of the that you would like to search.
+
+* `getBoundary(detected_pixels: qi.List(qi.Struct)) -> qi.List(qi.Struct)`
+
+This method detects the inner boundaries of a list of x, y coordinates and returns the top, bottom, left,
+and right boundaries respectively. The only parameter that this method takes is `detected_pixels` which
+should be a list of x and y coordinates. 
+
+* `rescale(edges: qi.List(qi.Struct), scale: qi.List(qi.UInt8)) -> qi.List(qi.Struct)`
+
+This method rescales a list of edges by a specified scaling factor. The parameter `edges` should be a list
+of structs that contain a beginning x and y coordinate along with an ending x and y coordinate. The parameter
+`scale` should be a list of 2 integers that represent an x and y scaling factor respectively.
 
 &nbsp;
 
