@@ -27,21 +27,6 @@ class SIMVision(object):
         # Internal variables
         self.level = 0
 
-    @qi.bind(returnType=qi.Void, paramsType=[qi.Int8])
-    def set(self, level):
-        "Set level"
-        self.level = level
-
-    @qi.bind(returnType=qi.Int8, paramsType=[])
-    def get(self):
-        "Get level"
-        return self.level
-
-    @qi.bind(returnType=qi.Void, paramsType=[])
-    def reset(self):
-        "Reset level to default value"
-        return self.set(0)
-
     @qi.bind(returnType=qi.Void, paramsType=[])
     def stop(self):
         """Stop the service."""
