@@ -16,7 +16,7 @@ from simyan.app.scripts.simutils.service import ServiceScope
 
 
 class SIMDrawingExample(object):
-    """A SIMYAN drawing activity demo."""
+    """A SIMYAN drawing example."""
     APP_ID = "org.uccs.simyan.SIMDrawingExample"
 
     def __init__(self, qiapp):
