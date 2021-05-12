@@ -40,6 +40,16 @@ class SIMVision(object):
 
     @qi.bind(returnType=qi.List(qi.Struct), paramsType=[qi.String, qi.Struct, qi.UInt8, qi.UInt8, qi.UInt8])
     def detectPixels(self, img, pixel_color, r_range=0, g_range=0, b_range=0):
+        """
+        Detects all the pixels of a given color and returns their locations.
+
+        :param img: (str) The image path
+        :param pixel_color: (struct) The RGB values for the desired color
+        :param r_range: (int) The value to be added and subtracted for the r range
+        :param g_range: (int) The value to be added and subtracted for the g range
+        :param b_range: (int) The value to be added and subtracted for the b range
+        :return: The locations of all the matching pixels
+        """
         image_path = img
         color = pixel_color
         image = Image.open(image_path, 'r')
@@ -65,8 +75,15 @@ class SIMVision(object):
                         k += 1
         return detected_pixels
 
+
     @qi.bind(returnType=qi.List(qi.Struct), paramsType=[qi.List(qi.Struct)])
     def getBoundary(self, detected_pixels):
+        """
+        Finds the inner boundaries of a grouping of pixels.
+
+        :param detected_pixels: (struct) The locations of all the pixels to be used
+        :return: The top, bottom, left, and right boundary respectively
+        """
         least_x = sys.maxint
         greatest_x = 0
         least_y = sys.maxint
@@ -124,6 +141,13 @@ class SIMVision(object):
 
     @qi.bind(returnType=qi.List(qi.Struct), paramsType=[qi.List(qi.Struct), qi.List(qi.UInt8)])
     def rescale(self, edges, scale):
+        """
+        Rescales a list of edges to a specified scale.
+
+        :param edges: (list(struct)) A list of sets of coordinates that define edges
+        :param scale: (list(int)) A list of 2 values, a scalar for x and y respectively
+        :return: All edges passed rescaled by the given scalars
+        """
         rescaled_edges = list()
         for i, j, k, l in edges:
             rescaled_edges.append((i / scale[0], j / scale[1], k / scale[0], l / scale[1]))
