@@ -34,9 +34,11 @@ class QiChatBuilder:
         self.concepts = {}
         self.state = QiState.Blank
 
-    #sets topic for qiChat
+  
     def set_topic(self, topic):
+        #sets topic for qiChat
         #if state of qiChat script has a blank topic, then raise error to set topic  for the qiChat script
+      
         if not self.state == QiState.Blank:
             raise ValueError("Can only set topic for a blank chat script.")
         if not topic.startswith('~'):
@@ -47,9 +49,11 @@ class QiChatBuilder:
         self.state = QiState.Topic
         return self
 
-    #sets language for qiChat
+   
     def set_language(self, language):
+         #sets language for qiChat
         # if state of qiChat does not have a language not set up, the raise error to set up language for the the qiChat script
+        
         if not self.state == QiState.Topic:
            raise ValueError ("Can only set language for a blank chat script.")
 
@@ -59,8 +63,10 @@ class QiChatBuilder:
         self.state = QiState.Language
         return self
 
-    # sets concept for qiChat
+   
     def add_concept(self, concept, definitions=[]):
+         # sets concept for qiChat
+            
         #add a concept dictionary
         concept_def = {
             'name': concept
@@ -86,8 +92,10 @@ class QiChatBuilder:
         self.state = QiState.Concept
         return self
 
-    # sets user says for qiChat
+    
     def user_says(self, say):
+        # sets user says for qiChat
+        
         # if the state of qiChat for user says is greater than a blank script,
         # then  set up topic to add the user says for qiChat script
         if not self.state > QiState.Blank:
@@ -113,8 +121,9 @@ class QiChatBuilder:
         return self
 
 
-    # builds the qiChat scripts
+  
     def build(self):
+        # builds the qiChat scripts
         return self.script
 
 
@@ -126,12 +135,22 @@ def main(session):
     ALDialog = session.service("ALDialog")
     ALDialog.setLanguage("English")
 
-
+    #builder for qiChat
     builder = QiChatBuilder()
+    
+    # builder for qiChat topic
     builder.set_topic('Drawing')
+    
+    # builder for qiChat language
     builder.set_language('enu')
+    
+    # builder for qiChat concept
     builder.add_concept('image', ['line', 'square', 'triangle','circle'])
+    
+    # builder of for qiChat user says
     builder.user_says('Can you draw?')
+    
+    # builder for qiChat robot dialog
     builder.robot_dialog('Yes,I can draw')
 
     # register a callback with the speech service that is
