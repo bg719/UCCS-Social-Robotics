@@ -104,7 +104,7 @@ class KeyFrame:
         :param effector: (str) The effector targeted by the keyframe.
         :param frame: (int) The spatial reference frame. Must be in motion.constants.FRAMES.
         :param axis_mask: (int) The axis mask. Must be in motion.constants.AXIS_MASKS.
-        :param kftype: (int) The keyframe type. See motion.constants.KFTYPES.
+        :param kftype: (str) The keyframe type. See motion.constants.KFTYPES.
         :param with_previous: (bool) If True, this keyframe will execute concurrently
             with the previous keyframe.
         """
