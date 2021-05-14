@@ -37,8 +37,8 @@ class QiChatBuilder:
   
     def set_topic(self, topic):
         #sets topic for qiChat
+        
         #if state of qiChat script has a blank topic, then raise error to set topic  for the qiChat script
-      
         if not self.state == QiState.Blank:
             raise ValueError("Can only set topic for a blank chat script.")
         if not topic.startswith('~'):
@@ -52,8 +52,8 @@ class QiChatBuilder:
    
     def set_language(self, language):
          #sets language for qiChat
+            
         # if state of qiChat does not have a language not set up, the raise error to set up language for the the qiChat script
-        
         if not self.state == QiState.Topic:
            raise ValueError ("Can only set language for a blank chat script.")
 
@@ -108,8 +108,10 @@ class QiChatBuilder:
         self.state = QiState.User
         return self
 
-    #sets robot dialog for qiChat
+ 
     def robot_dialog(self, dialog):
+        #sets robot dialog for qiChat
+            
         # if the state of qiChat for robot dialog  is greater than a blank script,
         # then  set up topic to add robot dialog  for qiChat script
         if not self.state >  QiState.Blank:
