@@ -23,17 +23,17 @@ class SIMMotion(object):
 
         :param qiapp: (qi.Application) The hosting qi application.
         """
-        # generic activity boilerplate
+        # generic STK activity boilerplate
         self.qiapp = qiapp
         self.events = stk.events.EventHelper(qiapp.session)
         self.s = stk.services.ServiceCache(qiapp.session)
         self.logger = stk.logging.get_logger(qiapp.session, self.APP_ID)
 
-        # service state
+        # Service state
         self.contexts = {}
         self.handlers = [
             AbsoluteSequenceHandler(),
-            # PlanarSequenceHandler()
+            # PlanarSequenceHandler() - Not fully implemented!
         ]
         self.lock = threading.Lock()
 

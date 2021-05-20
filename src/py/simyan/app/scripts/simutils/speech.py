@@ -106,7 +106,7 @@ class QiChatBuilder:
 
 
 class SpeechEvent:
-    """A speech event which invokes a callback when a particular word is recognized."""
+    """A speech event which invokes a callback when a particular phrase is recognized."""
 
     def __init__(self, phrases, callback, minimum_confidence=0.55, repeat=False):
         """
@@ -189,8 +189,8 @@ class SpeechEvent:
     def wait(self, timeout=None):
         """
         Waits for the speech event to occur. If a timeout is specified
-        the event subscription will be canceled if it has not already
-        occurred.
+        the event subscription will be canceled after that period if it has
+        not already occurred.
 
         :param timeout: (float) The timeout in seconds.
         :return: (qi.FutureState) The final state of the event future.

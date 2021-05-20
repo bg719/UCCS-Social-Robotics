@@ -87,7 +87,7 @@ def enable_right_arm_control(motion_proxy, stiffness=1.0):
 
 def async_disable_breathing(chains, motion_proxy):
     """
-    Disables the "breathing" motions for the specified effectors, then
+    Disables the "breathing" motions for the specified chains, then
     delays for 2 seconds to wait for completion.
 
     :param chains: (Iterable[str]) The chains.
@@ -103,7 +103,7 @@ def async_disable_breathing(chains, motion_proxy):
 
 def async_enable_breathing(chains, motion_proxy):
     """
-    Enables the "breathing" motions for the specified effectors, then
+    Enables the "breathing" motions for the specified chains, then
     delays for 2 seconds to wait for completion.
 
     :param chains: (Iterable[str]) The chains.

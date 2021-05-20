@@ -34,7 +34,7 @@ def new_invocation_args():
 
 def are_equal(p1, p2, thresholds=0.001):
     """
-    Determines whether `p1` and `p2` are the equal within the
+    Determines whether `p1` and `p2` are equal within the
     specified threshold(s).
 
     :param p1: (List[float]) The first position/transform.

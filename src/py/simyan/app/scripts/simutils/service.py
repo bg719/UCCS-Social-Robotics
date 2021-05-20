@@ -65,6 +65,6 @@ class ServiceScope:
 
     @property
     def is_started(self):
-        """Returns a value indication whether a scope has been created and the service started."""
+        """Returns a value indicating whether a scope has been created and the service started."""
         return self._id is not None
 

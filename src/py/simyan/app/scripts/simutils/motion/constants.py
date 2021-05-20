@@ -17,29 +17,30 @@ __author__ = 'ancient-sentinel'
 # FRAMES
 FRAME_TORSO = 0
 """
-This get_frame is attached to the robot's torso reference, so it moves with
+This frame is attached to the robot's torso reference, so it moves with
 the robot as he walks and changes orientation as he leans. This space is
 useful when you have very local tasks that make sense in the orientation
-of the torso get_frame.
+of the torso frame.
 """
 
 FRAME_WORLD = 1
 """
-This get_frame is in reference to a fixed origin that is never altered,
+This frame is in reference to a fixed origin that is never altered,
 specifically, the world-position where the robot starts. It is left behind
 when the robot walks, and will be different in z-rotation after the robot
 has turned. This space is useful for calculations which require an external,
-absolute get_frame of reference.
+absolute frame of reference.
 """
 
 FRAME_ROBOT = 2
 """
-This get_frame is average of the two feet positions projected around a vertical
-z-axis. This space is useful because the x-axis is always forwards so
+This frame is average of the two feet positions projected around a vertical
+z-axis. This space is useful because the x-axis is always forwards, so
 it provides a natural, ego-centric reference.
 """
 
 FRAMES = (FRAME_TORSO, FRAME_WORLD, FRAME_ROBOT)
+"""The set of all spatial frames."""
 
 # MOVEMENT
 MVT_RELATIVE = 0
@@ -189,13 +190,28 @@ CHAINS = (
 
 # PREDEFINED POSTURES
 POSE_STAND = 'Stand'
+"""The identifier for the predefined standing pose."""
+
 POSE_STAND_INIT = 'StandInit'
+"""The identifier for the predefined initial standing pose."""
+
 POSE_STAND_ZERO = 'StandZero'
+"""The identifier for the predefined zeroed standing pose."""
+
 POSE_CROUCH = 'Crouch'
+"""The identifier for the predefined crouching pose."""
+
 POSE_SIT = 'Sit'
+"""The identifier for the predefined sitting pose."""
+
 POSE_SIT_RELAX = 'SitRelax'
+"""The identifier for the predefined relaxed sitting pose."""
+
 POSE_LYING_BELLY = 'LyingBelly'
+"""The identifier for the predefined pose lying on the belly."""
+
 POSE_LYING_BACK = 'LyingBack'
+"""The identifier for the predefined pose lying on the back."""
 
 PREDEFINED_POSES = (
     POSE_STAND, POSE_STAND_INIT, POSE_STAND_ZERO,
